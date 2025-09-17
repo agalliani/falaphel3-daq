@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.1 (64-bit)
+# SW Build 3865809 on Sun May  7 15:05:29 MDT 2023
+# IP Build 3864474 on Sun May  7 20:36:21 MDT 2023
+# SharedData Build 3865790 on Sun May 07 13:33:03 MDT 2023
+# Start of session at: Mon Jun 23 17:30:52 2025
+# Process ID: 25376
+# Current directory: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/spi_fifo_synth_1
+# Command line: vivado.exe -log spi_fifo.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source spi_fifo.tcl
+# Log file: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/spi_fifo_synth_1/spi_fifo.vds
+# Journal file: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/spi_fifo_synth_1\vivado.jou
+# Running On: pcfalchieri, OS: Windows, CPU Frequency: 2100 MHz, CPU Physical cores: 16, Host memory: 68604 MB
+#-----------------------------------------------------------
+source spi_fifo.tcl -notrace

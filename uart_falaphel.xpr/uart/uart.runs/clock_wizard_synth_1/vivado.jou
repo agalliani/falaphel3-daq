@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.1 (64-bit)
+# SW Build 3865809 on Sun May  7 15:05:29 MDT 2023
+# IP Build 3864474 on Sun May  7 20:36:21 MDT 2023
+# SharedData Build 3865790 on Sun May 07 13:33:03 MDT 2023
+# Start of session at: Tue Jun 24 17:51:11 2025
+# Process ID: 27896
+# Current directory: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/clock_wizard_synth_1
+# Command line: vivado.exe -log clock_wizard.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source clock_wizard.tcl
+# Log file: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/clock_wizard_synth_1/clock_wizard.vds
+# Journal file: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/clock_wizard_synth_1\vivado.jou
+# Running On: pcfalchieri, OS: Windows, CPU Frequency: 2100 MHz, CPU Physical cores: 16, Host memory: 68604 MB
+#-----------------------------------------------------------
+source clock_wizard.tcl -notrace

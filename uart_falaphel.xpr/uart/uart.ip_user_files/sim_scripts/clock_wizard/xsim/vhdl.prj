@@ -1,0 +1,5 @@
+vhdl xil_defaultlib  \
+"../../../../uart.gen/sources_1/ip/clock_wizard/clock_wizard_sim_netlist.vhdl" \
+
+# Do not sort compile order
+nosort

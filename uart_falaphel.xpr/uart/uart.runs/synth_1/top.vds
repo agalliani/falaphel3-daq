@@ -1,0 +1,564 @@
+#-----------------------------------------------------------
+# Vivado v2023.1 (64-bit)
+# SW Build 3865809 on Sun May  7 15:05:29 MDT 2023
+# IP Build 3864474 on Sun May  7 20:36:21 MDT 2023
+# SharedData Build 3865790 on Sun May 07 13:33:03 MDT 2023
+# Start of session at: Wed Sep 17 12:55:10 2025
+# Process ID: 25348
+# Current directory: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1
+# Command line: vivado.exe -log top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top.tcl
+# Log file: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/top.vds
+# Journal file: E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1\vivado.jou
+# Running On: pcfalchieri, OS: Windows, CPU Frequency: 2100 MHz, CPU Physical cores: 16, Host memory: 68604 MB
+#-----------------------------------------------------------
+WARNING: [Runs 36-547] User Strategy 'Vivado Implementation Defaults' from file 'C:\Users\falchieri\AppData\Roaming/Xilinx/Vivado/2020.2/strategies/Vivado Implementation Defaults.Vivado Implementation 2014.psg' discarded because strategy with same name already parsed from 'C:/Xilinx/Vivado/2023.1/strategies/VDI2014.psg'
+source top.tcl -notrace
+create_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:17 . Memory (MB): peak = 460.879 ; gain = 158.703
+Command: read_checkpoint -auto_incremental -incremental {E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/utils_1/imports/synth_1/top.dcp}
+INFO: [Vivado 12-5825] Read reference checkpoint from E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/utils_1/imports/synth_1/top.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
+Command: synth_design -top top -part xc7k325tffg900-2
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7k325t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7k325t'
+INFO: [Common 17-1540] The version limit for your license is '2025.01' and has expired for new software. A version limit expiration means that, although you may be able to continue to use the current version of tools or IP with this license, you will not be eligible for new releases.
+INFO: [Device 21-403] Loading part xc7k325tffg900-2
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 11492
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:08 ; elapsed = 00:00:10 . Memory (MB): peak = 1372.383 ; gain = 410.133
+---------------------------------------------------------------------------------
+INFO: [Synth 8-638] synthesizing module 'top' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:85]
+	Parameter DDR_CLK_EDGE bound to: SAME_EDGE - type: string 
+	Parameter INIT bound to: 1'b0 
+	Parameter SRTYPE bound to: SYNC - type: string 
+INFO: [Synth 8-113] binding component instance 'clk640_out_ODDR' to cell 'ODDR' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:252]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'clk640_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:270]
+	Parameter DDR_CLK_EDGE bound to: SAME_EDGE - type: string 
+	Parameter INIT bound to: 1'b0 
+	Parameter SRTYPE bound to: SYNC - type: string 
+INFO: [Synth 8-113] binding component instance 'clk40_out_ODDR' to cell 'ODDR' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:283]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'clk40_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:301]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'resetn_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:315]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'inj_pulse_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:329]
+	Parameter DIFF_TERM bound to: 1 - type: bool 
+	Parameter IBUF_LOW_PWR bound to: 0 - type: bool 
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'inj_out_buf_ibufds' to cell 'IBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:341]
+	Parameter DIFF_TERM bound to: 1 - type: bool 
+	Parameter IBUF_LOW_PWR bound to: 0 - type: bool 
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'orwide_buf_p_ibufds' to cell 'IBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:355]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'spi_ss_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:372]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'spi_mosi_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:384]
+	Parameter DIFF_TERM bound to: 1 - type: bool 
+	Parameter IBUF_LOW_PWR bound to: 0 - type: bool 
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'spi_miso_ibufds' to cell 'IBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:396]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'spi_sclk_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:410]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'spi_sclk_dac_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:426]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'cs_ld_dac_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:438]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'sdi_dac_dac_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:450]
+	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
+INFO: [Synth 8-113] binding component instance 'clr_dac_obufds' to cell 'OBUFDS' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:462]
+INFO: [Synth 8-3491] module 'clock_wizard' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/clock_wizard_stub.vhdl:6' bound to instance 'clock_wizard_inst' of component 'clock_wizard' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:477]
+INFO: [Synth 8-638] synthesizing module 'clock_wizard' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/clock_wizard_stub.vhdl:18]
+	Parameter g_CLKS_PER_BIT bound to: 347 - type: integer 
+INFO: [Synth 8-3491] module 'uart_rx' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_rx.vhd:16' bound to instance 'uart_rx_inst' of component 'uart_rx' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:488]
+INFO: [Synth 8-638] synthesizing module 'uart_rx' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_rx.vhd:31]
+	Parameter g_CLKS_PER_BIT bound to: 347 - type: integer 
+INFO: [Synth 8-256] done synthesizing module 'uart_rx' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_rx.vhd:31]
+	Parameter g_CLKS_PER_BIT bound to: 347 - type: integer 
+INFO: [Synth 8-3491] module 'uart_tx' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_tx.vhd:15' bound to instance 'uart_tx_inst' of component 'uart_tx' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:501]
+INFO: [Synth 8-638] synthesizing module 'uart_tx' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_tx.vhd:31]
+	Parameter g_CLKS_PER_BIT bound to: 347 - type: integer 
+INFO: [Synth 8-256] done synthesizing module 'uart_tx' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_tx.vhd:31]
+INFO: [Synth 8-3491] module 'uart_decoder' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_decoder.vhd:8' bound to instance 'uart_decoder_inst' of component 'uart_decoder' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:516]
+INFO: [Synth 8-638] synthesizing module 'uart_decoder' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_decoder.vhd:27]
+INFO: [Synth 8-3491] module 'ila_debug' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/ila_debug_stub.vhdl:6' bound to instance 'ila_debug_instance' of component 'ila_debug' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_decoder.vhd:92]
+INFO: [Synth 8-638] synthesizing module 'ila_debug' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/ila_debug_stub.vhdl:17]
+INFO: [Synth 8-256] done synthesizing module 'uart_decoder' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uart_decoder.vhd:27]
+INFO: [Synth 8-3491] module 'payload' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:28' bound to instance 'payload_inst' of component 'payload' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:530]
+INFO: [Synth 8-638] synthesizing module 'payload' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:50]
+	Parameter NSLV bound to: 5 - type: integer 
+	Parameter STROBE_GAP bound to: 0 - type: bool 
+	Parameter SEL_WIDTH bound to: 5 - type: integer 
+INFO: [Synth 8-3491] module 'uartbus_fabric_sel' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uartbus_fabric_sel.vhd:7' bound to instance 'fabric' of component 'uartbus_fabric_sel' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:148]
+INFO: [Synth 8-638] synthesizing module 'uartbus_fabric_sel' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uartbus_fabric_sel.vhd:25]
+	Parameter NSLV bound to: 5 - type: integer 
+	Parameter STROBE_GAP bound to: 0 - type: bool 
+	Parameter SEL_WIDTH bound to: 5 - type: integer 
+INFO: [Synth 8-256] done synthesizing module 'uartbus_fabric_sel' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/uartbus_fabric_sel.vhd:25]
+INFO: [Synth 8-3491] module 'LED_tester' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/LED_tester.vhd:6' bound to instance 'leds_instance' of component 'LED_tester' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:165]
+INFO: [Synth 8-638] synthesizing module 'LED_tester' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/LED_tester.vhd:17]
+INFO: [Synth 8-256] done synthesizing module 'LED_tester' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/LED_tester.vhd:17]
+INFO: [Synth 8-3491] module 'register_file' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/register_file.vhd:27' bound to instance 'register_file_inst' of component 'register_file' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:177]
+INFO: [Synth 8-638] synthesizing module 'register_file' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/register_file.vhd:38]
+INFO: [Synth 8-256] done synthesizing module 'register_file' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/register_file.vhd:38]
+	Parameter N_SS bound to: 1 - type: integer 
+	Parameter ID bound to: 0 - type: integer 
+INFO: [Synth 8-3491] module 'spi_master' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:6' bound to instance 'spi_master_fal' of component 'spi_master' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:191]
+INFO: [Synth 8-638] synthesizing module 'spi_master' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:24]
+	Parameter N_SS bound to: 1 - type: integer 
+	Parameter ID bound to: 0 - type: integer 
+INFO: [Synth 8-3491] module 'spi_fifo' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/spi_fifo_stub.vhdl:6' bound to instance 'spi_fifo_in' of component 'spi_fifo' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:142]
+INFO: [Synth 8-638] synthesizing module 'spi_fifo' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/spi_fifo_stub.vhdl:21]
+INFO: [Synth 8-3491] module 'spi_fifo' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/.Xil/Vivado-25348-pcfalchieri/realtime/spi_fifo_stub.vhdl:6' bound to instance 'spi_fifo_out' of component 'spi_fifo' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:156]
+INFO: [Synth 8-3491] module 'spi_top' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_top.v:45' bound to instance 'spi' of component 'spi_top' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:243]
+INFO: [Synth 8-6157] synthesizing module 'spi_top' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_top.v:45]
+INFO: [Synth 8-6157] synthesizing module 'spi_clgen' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_clgen.v:44]
+INFO: [Synth 8-6155] done synthesizing module 'spi_clgen' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_clgen.v:44]
+INFO: [Synth 8-6157] synthesizing module 'spi_shift' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_shift.v:44]
+INFO: [Synth 8-6155] done synthesizing module 'spi_shift' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_shift.v:44]
+INFO: [Synth 8-6155] done synthesizing module 'spi_top' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_top.v:45]
+INFO: [Synth 8-256] done synthesizing module 'spi_master' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:24]
+	Parameter N_SS bound to: 1 - type: integer 
+	Parameter ID bound to: 0 - type: integer 
+INFO: [Synth 8-3491] module 'spi_master' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/spi_master.vhd:6' bound to instance 'spi_master_dac' of component 'spi_master' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:214]
+INFO: [Synth 8-3491] module 'pulser' declared at 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:27' bound to instance 'pulser_inst' of component 'pulser' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:237]
+INFO: [Synth 8-638] synthesizing module 'pulser' [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:38]
+INFO: [Synth 8-256] done synthesizing module 'pulser' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:38]
+INFO: [Synth 8-256] done synthesizing module 'payload' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/payload.vhd:50]
+INFO: [Synth 8-256] done synthesizing module 'top' (0#1) [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/top.vhd:85]
+WARNING: [Synth 8-6014] Unused sequential element ack_reg was removed.  [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:51]
+WARNING: [Synth 8-3848] Net uartbus_out[uart_rdata] in module/entity pulser does not have driver. [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:33]
+WARNING: [Synth 8-3848] Net uartbus_out[uart_ack] in module/entity pulser does not have driver. [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:33]
+WARNING: [Synth 8-3848] Net uartbus_out[uart_err] in module/entity pulser does not have driver. [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/sources_1/new/pulser.vhd:33]
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][31] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][30] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][29] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][28] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][27] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][26] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][25] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][24] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][23] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][22] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][21] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][20] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][19] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][18] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][17] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][16] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][15] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][14] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][13] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][12] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][11] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][10] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][9] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][8] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][7] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][6] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][5] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][4] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][3] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][2] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][1] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_rdata][0] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_ack] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_out[uart_err] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][31] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][30] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][29] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][28] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][27] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][26] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][25] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][24] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][23] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][22] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][21] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][20] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][19] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][18] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][17] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][16] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][15] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][14] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][13] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][12] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][11] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][10] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][9] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][8] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][7] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][6] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][5] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][4] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][3] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][2] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][1] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_addr][0] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][31] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][30] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][29] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][28] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][27] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][26] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][25] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][24] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][23] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][22] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][21] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][20] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][19] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][18] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][17] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][16] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][15] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][14] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][13] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][12] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][11] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][10] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][9] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][8] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][7] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][6] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][5] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][4] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][3] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][2] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][1] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port uartbus_in[uart_wdata][0] in module pulser is either unconnected or has no load
+WARNING: [Synth 8-7129] Port latch[3] in module spi_shift is either unconnected or has no load
+WARNING: [Synth 8-7129] Port latch[2] in module spi_shift is either unconnected or has no load
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:12 ; elapsed = 00:00:14 . Memory (MB): peak = 1478.648 ; gain = 516.398
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:12 ; elapsed = 00:00:14 . Memory (MB): peak = 1478.648 ; gain = 516.398
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:12 ; elapsed = 00:00:14 . Memory (MB): peak = 1478.648 ; gain = 516.398
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.074 . Memory (MB): peak = 1478.648 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 16 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+WARNING: [Netlist 29-1115] Found multi-term driver net: payload_inst/uartbus_from_slaves[1][uart_err].
+WARNING: [Netlist 29-1115] Found multi-term driver net: payload_inst/register_file_inst/<const1>.
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/clock_wizard/clock_wizard/clock_wizard_in_context.xdc] for cell 'clock_wizard_inst'
+Finished Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/clock_wizard/clock_wizard/clock_wizard_in_context.xdc] for cell 'clock_wizard_inst'
+Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/ila_debug/ila_debug/ila_debug_in_context.xdc] for cell 'uart_decoder_inst/ila_debug_instance'
+Finished Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/ila_debug/ila_debug/ila_debug_in_context.xdc] for cell 'uart_decoder_inst/ila_debug_instance'
+Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_fal/spi_fifo_in'
+Finished Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_fal/spi_fifo_in'
+Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_fal/spi_fifo_out'
+Finished Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_fal/spi_fifo_out'
+Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_dac/spi_fifo_in'
+Finished Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_dac/spi_fifo_in'
+Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_dac/spi_fifo_out'
+Finished Parsing XDC File [e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/spi_fifo/spi_fifo/spi_fifo_in_context.xdc] for cell 'payload_inst/spi_master_dac/spi_fifo_out'
+Parsing XDC File [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/constrs_1/new/top.xdc]
+Finished Parsing XDC File [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/constrs_1/new/top.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [E:/esperimenti/ignite/projects/test board/firmware/uart/uart.srcs/constrs_1/new/top.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 1586.867 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.016 . Memory (MB): peak = 1586.867 ; gain = 0.000
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:26 ; elapsed = 00:00:28 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7k325tffg900-2
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:26 ; elapsed = 00:00:28 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+Applied set_property IO_BUFFER_TYPE = NONE for sysclk_n. (constraint file  {e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/clock_wizard/clock_wizard/clock_wizard_in_context.xdc}, line 4).
+Applied set_property CLOCK_BUFFER_TYPE = NONE for sysclk_n. (constraint file  {e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/clock_wizard/clock_wizard/clock_wizard_in_context.xdc}, line 5).
+Applied set_property IO_BUFFER_TYPE = NONE for sysclk_p. (constraint file  {e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/clock_wizard/clock_wizard/clock_wizard_in_context.xdc}, line 6).
+Applied set_property CLOCK_BUFFER_TYPE = NONE for sysclk_p. (constraint file  {e:/esperimenti/ignite/projects/test board/firmware/uart/uart.gen/sources_1/ip/clock_wizard/clock_wizard/clock_wizard_in_context.xdc}, line 7).
+Applied set_property KEEP_HIERARCHY = SOFT for clock_wizard_inst. (constraint file  auto generated constraint).
+Applied set_property KEEP_HIERARCHY = SOFT for uart_decoder_inst/ila_debug_instance. (constraint file  auto generated constraint).
+Applied set_property KEEP_HIERARCHY = SOFT for payload_inst/spi_master_fal/spi_fifo_in. (constraint file  auto generated constraint).
+Applied set_property KEEP_HIERARCHY = SOFT for payload_inst/spi_master_dac/spi_fifo_in. (constraint file  auto generated constraint).
+Applied set_property KEEP_HIERARCHY = SOFT for payload_inst/spi_master_fal/spi_fifo_out. (constraint file  auto generated constraint).
+Applied set_property KEEP_HIERARCHY = SOFT for payload_inst/spi_master_dac/spi_fifo_out. (constraint file  auto generated constraint).
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+INFO: [Synth 8-802] inferred FSM for state register 'r_SM_Main_reg' in module 'uart_tx'
+INFO: [Synth 8-802] inferred FSM for state register 'state_frame_decode_reg' in module 'uart_decoder'
+INFO: [Synth 8-802] inferred FSM for state register 'state_tx_data_reg' in module 'uart_decoder'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  s_idle |                              000 |                              000
+          s_tx_start_bit |                              001 |                              001
+          s_tx_data_bits |                              010 |                              010
+           s_tx_stop_bit |                              011 |                              011
+               s_cleanup |                              100 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'r_SM_Main_reg' using encoding 'sequential' in module 'uart_tx'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 iSTATE6 |                              000 |                              000
+                  iSTATE |                              001 |                              001
+                 iSTATE0 |                              010 |                              101
+                 iSTATE1 |                              011 |                              010
+                 iSTATE2 |                              100 |                              110
+                 iSTATE3 |                              101 |                              011
+                 iSTATE4 |                              110 |                              111
+                 iSTATE5 |                              111 |                              100
+*
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_tx_data_reg' using encoding 'sequential' in module 'uart_decoder'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 iSTATE7 |                             0000 |                             0000
+                 iSTATE6 |                             0001 |                             0001
+                 iSTATE2 |                             0010 |                             0010
+                  iSTATE |                             0011 |                             0011
+                 iSTATE0 |                             0100 |                             0100
+                iSTATE13 |                             0101 |                             0101
+                iSTATE11 |                             0110 |                             0110
+                 iSTATE9 |                             0111 |                             0111
+                iSTATE10 |                             1000 |                             1000
+                 iSTATE8 |                             1001 |                             1001
+                 iSTATE5 |                             1010 |                             1010
+                 iSTATE3 |                             1011 |                             1011
+                 iSTATE4 |                             1100 |                             1100
+                 iSTATE1 |                             1101 |                             1101
+                iSTATE12 |                             1110 |                             1110
+*
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_frame_decode_reg' using encoding 'sequential' in module 'uart_decoder'
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:27 ; elapsed = 00:00:30 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input    9 Bit       Adders := 2     
+	   2 Input    6 Bit       Adders := 2     
+	   2 Input    5 Bit       Adders := 4     
+	   3 Input    5 Bit       Adders := 4     
+	   2 Input    3 Bit       Adders := 2     
++---Registers : 
+	               38 Bit    Registers := 6     
+	               32 Bit    Registers := 19    
+	               24 Bit    Registers := 2     
+	               16 Bit    Registers := 2     
+	               14 Bit    Registers := 2     
+	                9 Bit    Registers := 2     
+	                8 Bit    Registers := 5     
+	                6 Bit    Registers := 2     
+	                4 Bit    Registers := 1     
+	                3 Bit    Registers := 3     
+	                1 Bit    Registers := 45    
++---Muxes : 
+	  14 Input   32 Bit        Muxes := 1     
+	   9 Input   32 Bit        Muxes := 1     
+	   5 Input   32 Bit        Muxes := 1     
+	   2 Input   32 Bit        Muxes := 3     
+	   2 Input   24 Bit        Muxes := 4     
+	   2 Input   16 Bit        Muxes := 2     
+	   2 Input   14 Bit        Muxes := 4     
+	   2 Input    9 Bit        Muxes := 2     
+	   6 Input    9 Bit        Muxes := 1     
+	   6 Input    8 Bit        Muxes := 1     
+	   2 Input    8 Bit        Muxes := 4     
+	   4 Input    8 Bit        Muxes := 1     
+	   2 Input    6 Bit        Muxes := 4     
+	   2 Input    5 Bit        Muxes := 6     
+	  15 Input    4 Bit        Muxes := 1     
+	   2 Input    4 Bit        Muxes := 19    
+	   2 Input    3 Bit        Muxes := 13    
+	   5 Input    3 Bit        Muxes := 1     
+	   8 Input    3 Bit        Muxes := 1     
+	   6 Input    3 Bit        Muxes := 1     
+	   2 Input    2 Bit        Muxes := 1     
+	   3 Input    2 Bit        Muxes := 1     
+	   6 Input    1 Bit        Muxes := 2     
+	   2 Input    1 Bit        Muxes := 32    
+	   5 Input    1 Bit        Muxes := 14    
+	   9 Input    1 Bit        Muxes := 1     
+	   8 Input    1 Bit        Muxes := 3     
+	  15 Input    1 Bit        Muxes := 2     
+	  11 Input    1 Bit        Muxes := 1     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 840 (col length:140)
+BRAMs: 890 (col length: RAMB18 140 RAMB36 70)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:36 ; elapsed = 00:00:39 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:44 ; elapsed = 00:00:47 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:47 ; elapsed = 00:00:50 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:48 ; elapsed = 00:00:51 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+--------------+----------+
+|      |BlackBox name |Instances |
++------+--------------+----------+
+|1     |clock_wizard  |         1|
+|2     |spi_fifo      |         4|
+|3     |ila_debug     |         1|
++------+--------------+----------+
+
+Report Cell Usage: 
++------+------------------+------+
+|      |Cell              |Count |
++------+------------------+------+
+|1     |clock_wizard_bbox |     1|
+|2     |ila_debug_bbox    |     1|
+|3     |spi_fifo_bbox     |     1|
+|4     |spi_fifo_bbox_2   |     1|
+|5     |spi_fifo_bbox     |     1|
+|6     |spi_fifo_bbox_3   |     1|
+|7     |CARRY4            |     8|
+|8     |LUT1              |    72|
+|9     |LUT2              |    29|
+|10    |LUT3              |    72|
+|11    |LUT4              |    58|
+|12    |LUT5              |   133|
+|13    |LUT6              |   287|
+|14    |MUXF7             |     6|
+|15    |ODDR              |     2|
+|16    |FDCE              |    98|
+|17    |FDRE              |   813|
+|18    |FDSE              |    22|
+|19    |IBUF              |     2|
+|20    |IBUFDS            |     3|
+|21    |OBUF              |     7|
+|22    |OBUFDS            |    11|
++------+------------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:55 ; elapsed = 00:00:58 . Memory (MB): peak = 1586.867 ; gain = 624.617
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 24 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:39 ; elapsed = 00:00:54 . Memory (MB): peak = 1586.867 ; gain = 516.398
+Synthesis Optimization Complete : Time (s): cpu = 00:00:55 ; elapsed = 00:00:59 . Memory (MB): peak = 1586.867 ; gain = 624.617
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.044 . Memory (MB): peak = 1586.867 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 30 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1586.867 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: a66fc25a
+INFO: [Common 17-83] Releasing license: Synthesis
+91 Infos, 107 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:01:06 ; elapsed = 00:01:24 . Memory (MB): peak = 1586.867 ; gain = 1071.129
+INFO: [Common 17-1381] The checkpoint 'E:/esperimenti/ignite/projects/test board/firmware/uart/uart.runs/synth_1/top.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file top_utilization_synth.rpt -pb top_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Wed Sep 17 12:57:10 2025...
