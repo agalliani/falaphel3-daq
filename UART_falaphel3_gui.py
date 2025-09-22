@@ -2,6 +2,7 @@ import serial
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import csv
+import datetime
 
 # Command delimiters: each one is a single-byte marker to define the start and end of a packet
 WRITE_CMD_START_BYTE = 0xA1
@@ -11,7 +12,9 @@ READ_CMD_END_BYTE = 0xB2
 
 
 
-USE_SERIAL = False  # True per usare la porta reale, False per emulare
+USE_SERIAL = True  # True per usare la porta reale, False per emulare
+
+ALREADY_ACCESSED_SPI = False  # Flag per evitare di accedere più volte alla SPI
 
 class DummySerial:
     def __init__(self, port, baudrate, timeout=1):
@@ -84,11 +87,7 @@ def start_gui():
             return None
 
 
-    def log_to_monitor(msg):
-        monitor_text.config(state='normal')
-        monitor_text.insert(tk.END, msg + "\n")
-        monitor_text.see(tk.END)
-        monitor_text.config(state='disabled')
+
 
     def send_write():
         ser = connect()
@@ -96,13 +95,13 @@ def start_gui():
         try:
             addr = int(write_addr_entry.get(), 16)
             data = int(write_data_entry.get(), 16)
-            log_to_monitor(f"Write Command: Addr=0x{addr:08X}, Data=0x{data:08X}")
+            log_to_monitor(f"Write Command: Addr=0x{addr:08X}, Data=0x{data:08X}", "write")
             response = write_command(ser, addr, data)
             if response:
                 result = " ".join(f"{b:02X}" for b in response)
-                log_to_monitor(f"Response: {result}")
+                log_to_monitor(f"Response: {result}", "other")
             else:
-                log_to_monitor("No response")
+                log_to_monitor("No response", "other")
         except ValueError:
             messagebox.showerror("Error", "Invalid hex format")
         ser.close()
@@ -112,7 +111,7 @@ def start_gui():
         if not ser: return
         try:
             addr = int(read_addr_entry.get(), 16)
-            log_to_monitor(f"Read Command: Addr=0x{addr:08X}")
+            log_to_monitor(f"Read Command: Addr=0x{addr:08X}", "read")
             response = read_command(ser, addr)
             if response:
                 result = " ".join(f"{b:02X}" for b in response)
@@ -132,7 +131,39 @@ def start_gui():
                 process_csv_file(ser, file_path)
         ser.close()
 
+    def log_to_monitor(msg, tag="other"):
+        now = datetime.datetime.now()
+        timestamp = now.strftime("%H:%M:%S.%f")[:-3]  # ora:minuti:secondi.millisecondi
+        monitor_text.config(state='normal')
+        monitor_text.insert(tk.END, f"{timestamp} >> {msg}\n", tag)
+        monitor_text.see(tk.END)
+        monitor_text.config(state='disabled')
+
+    def send_command_and_log(cmd_type, address, value=None):
+        ser = connect()
+
+        if cmd_type == "write":
+            log_to_monitor(f"Write Command: Addr=0x{address:08X}, Data=0x{value:08X}", "write")
+            write_command(ser, address, value)
+        elif cmd_type == "read":
+            log_to_monitor(f"Read Command: Addr=0x{address:08X}", "read")
+            read_command(ser, address)
+        else:
+            log_to_monitor("Unknown command type", "other")
+            return
+        # Read ACK after each command
+        ack = ser.read(4)
+        if ack:
+            result = " ".join(f"{b:02X}" for b in ack)
+            log_to_monitor(f"ACK: {result}", "other")
+            result_var.set(result)
+        else:
+            log_to_monitor("No ACK received", "other")
+            result_var.set("")
+
     def send_configuration():
+        global ALREADY_ACCESSED_SPI
+
         ser = connect()
         if not ser:
             return
@@ -143,27 +174,29 @@ def start_gui():
             return
         try:
             config_value = int(config_str, 2)
-            log_to_monitor(f"1) SPI Init: Write 0x7 to 0x30014")
-            write_command(ser, 0x30014, 0x7)
-            log_to_monitor(f"2) SPI Init: Write 0x1 to 0x30018")
-            write_command(ser, 0x30018, 0x1)
-            log_to_monitor(f"3) SPI CTRL Clear: Write 0x2214 to 0x30010")
-            write_command(ser, 0x30010, 0x2214)
-            log_to_monitor(f"4) SPI Data: Write 0x{config_value:05X} to 0x30000")
-            write_command(ser, 0x30000, config_value)
-            log_to_monitor(f"5) SPI CTRL Set: Write 0x2314 to 0x30010")
-            write_command(ser, 0x30010, 0x2314)
-            log_to_monitor(f"6) SPI CTRL Clear: Write 0x2214 to 0x30010")
-            write_command(ser, 0x30010, 0x2214)
-            log_to_monitor(f"7) SPI Read: Read from 0x30000")
-            response = read_command(ser, 0x30000)
-            if response:
-                result = " ".join(f"{b:02X}" for b in response)
-                log_to_monitor(f"Response: {result}")
-                result_var.set(result)
-            else:
-                log_to_monitor("No response")
-                result_var.set("")
+            if ALREADY_ACCESSED_SPI==False:
+                log_to_monitor(f"First access to SPI, performing initialization", "initialization")
+                # 1) SPI Init: Write 0x7 to 0x30014
+                send_command_and_log("write", 0x30014, 0x7)
+                # 2) SPI Init: Write 0x1 to 0x30018
+                send_command_and_log("write", 0x30018, 0x1)
+                log_to_monitor(f"SPI initialization complete", "initialization")
+                ALREADY_ACCESSED_SPI = True
+            
+            # 3) SPI CTRL Clear: Write 0x2214 to 0x30010
+            log_to_monitor(f"SPI CTRL Clear", "explain")
+            send_command_and_log("write", 0x30010, 0x2214)
+            
+            # 4) SPI Data: Write config_value to 0x30000
+            log_to_monitor(f"SPI 20-bit Data Write: 0x{config_value:05X}", "explain")
+            send_command_and_log("write", 0x30000, config_value)
+            # 5) SPI CTRL Set: Write 0x2314 to 0x30010
+            log_to_monitor(f"SPI CTRL Set", "explain")
+            send_command_and_log("write", 0x30010, 0x2314)
+
+            # 7) SPI Read: Read from 0x30000
+            log_to_monitor(f"Answer from the chip", "explain")
+            send_command_and_log("read", 0x30000)
         except ValueError:
             messagebox.showerror("Error", "Invalid configuration format")
         ser.close()
@@ -202,11 +235,18 @@ def start_gui():
     read_addr_entry.grid(row=6, column=1)
 
     monitor_frame = tk.Frame(root, bd=2, relief=tk.GROOVE)
-    monitor_frame.grid(row=0, column=2, rowspan=20, sticky="nswe", padx=(10, 0), pady=5)
     tk.Label(monitor_frame, text="Monitor (Commands & Results)", font=("Arial", 10, "bold")).pack(anchor="w")
-
-    monitor_text = tk.Text(monitor_frame, width=60, height=25, state='disabled')
+    monitor_scrollbar = tk.Scrollbar(monitor_frame, orient="vertical")
+    monitor_text = tk.Text(monitor_frame, width=80, height=25, state='disabled', yscrollcommand=monitor_scrollbar.set)
+    monitor_text.tag_configure("initialization", foreground="purple")
+    monitor_text.tag_configure("explain", foreground="orange")
+    monitor_text.tag_configure("write", foreground="blue")
+    monitor_text.tag_configure("read", foreground="green")
+    monitor_text.tag_configure("other", foreground="black")
+    monitor_scrollbar.config(command=monitor_text.yview)
+    monitor_scrollbar.pack(side="right", fill="y")
     monitor_text.pack(fill="both", expand=True)
+    monitor_frame.grid(row=0, column=2, rowspan=20, sticky="nswe", padx=(10, 0), pady=5)
 
     tk.Button(root, text="Send Read", command=send_read).grid(row=7, column=0, columnspan=2)
 
