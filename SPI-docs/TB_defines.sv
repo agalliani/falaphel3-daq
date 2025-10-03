@@ -1,0 +1,22 @@
+
+`define SPI_WRITE_POINTER 0
+`define SPI_READ_POINTER 8
+
+`define SPI_WRITE_DATA 1
+`define SPI_READ_DATA 9 
+
+`define SPI_WRITE_INJ1 2
+`define SPI_READ_INJ1 10
+
+`define SPI_WRITE_INJ2 3
+`define SPI_READ_INJ2 11
+
+`define TOT_READ 12
+`define TOA_READ 13
+
+`define PAD_CONFIG_WRITE 6
+`define PAD_CONFIG_READ 14
+
+`define SPI_WRITE_STATUS 7
+`define SPI_READ_STATUS 15
+

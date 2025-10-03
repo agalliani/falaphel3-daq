@@ -11,6 +11,23 @@ READ_CMD_START_BYTE = 0xB1
 READ_CMD_END_BYTE = 0xB2
 
 
+# Commands to send to the FPGA via UART. They are the first 4 bits of the 20-bit configuration string.
+SPI_WRITE_POINTER = 0
+SPI_READ_POINTER = 8
+SPI_WRITE_DATA = 1
+SPI_READ_DATA = 9
+SPI_WRITE_INJ1 = 2
+SPI_READ_INJ1 = 10
+SPI_WRITE_INJ2 = 3
+SPI_READ_INJ2 = 11
+TOT_READ = 12
+TOA_READ = 13
+PAD_CONFIG_WRITE = 6
+PAD_CONFIG_READ = 14
+SPI_WRITE_STATUS = 7
+SPI_READ_STATUS = 15
+
+
 
 USE_SERIAL = True  # True per usare la porta reale, False per emulare
 
