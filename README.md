@@ -111,3 +111,18 @@ In futuro sarà necessario automatizzare lo scan su tutta la matrice, che è gra
         config_value = SPI_READ_DATA | 000000000000
         config_value = 1001  0000 0000 0000
 
+
+### Set iniettore
+
+        inj_bypass = 1'b0;
+        inj_period = 8'b00111111;
+        inj_burst  = 8'b00111111;
+        inj_duty   = 4'b0011;
+        inj_start  = 1'b1;
+
+```SPI_WRITE_INJ2 = 0011|0000|duty 4'|burst 8'``` invio per iniziare ```00110000001100000001```
+
+```SPI_WRITE_INJ1 = 0010|0000|start 1'|bypass 1'|period 8'``` invio ```001000001011111111```
+
+
+Per leggere il tot devo inviare il comando subito dopo l'iniezione: ```11000000000000000000```
