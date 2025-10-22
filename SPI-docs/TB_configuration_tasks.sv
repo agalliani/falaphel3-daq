@@ -154,10 +154,10 @@ begin
 	inj_burst  = 8'b00111111;
 	inj_duty   = 4'b0011;
 	inj_start  = 1'b1;
-
+        001100111111
         spi_cmd(`SPI_WRITE_INJ2, {inj_duty, inj_burst});               		// 4'b duty cycle - 8'b burst
         spi_cmd(`SPI_READ_INJ2,  {12'h000});
-
+        001000111111
         spi_cmd(`SPI_WRITE_INJ1, {2'b00, inj_start, inj_bypass, inj_period});   // 2'b00 - 1'b start - 1'b bypass - 8'b period
         spi_cmd(`SPI_READ_INJ1,  {12'h000});	
 

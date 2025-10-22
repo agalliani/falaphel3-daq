@@ -133,7 +133,7 @@ Per leggere il tot devo inviare il comando subito dopo l'iniezione: ```110000000
             01100000000000001010 //init pad
             00000000001100000000 // set pointer to 1st pixel
             00010000000000010001 // send config to the pointed pixel
-            00110000001100000001 // set inj2 command
-            00100000001011111111 // set inj1 command and start injection
+            00110000100000000101 // set inj2 command
+            00100000001000001111 // set inj1 command and start injection
             11000000000000000000 // read ToT
             --> response: "000000" | valid TOT (1 bit) | TOT value (5 bits)
