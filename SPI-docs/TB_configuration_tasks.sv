@@ -48,6 +48,7 @@ begin
                 for(int i = 0; i <= 31; i++) begin
                         spi_cmd(`SPI_WRITE_POINTER, {1'b0, 1'b0, 2'b11, col_address, row_address});
                         // 1'b0 - 1-b cap_25 - 5'b threshold - 1'b test_en - 1'b cap_50 - 1'b cap_csa_load - 1'b t_up - 1'b out_en
+                        00010000000000010001
                         spi_cmd(`SPI_WRITE_DATA, {pixel_test_value, out_en});
 			pixel_test_value = pixel_test_value + 1;
                         row_address = row_address + 1;

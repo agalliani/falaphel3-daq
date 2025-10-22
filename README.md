@@ -39,6 +39,8 @@ comandi SPI da dare all'inizio:
         comando(6)
     Il comando è definito nel file TB_defines.sv PAD_CONFIG_WRITE 6
 
+    Proviamo: 01100000000000000111
+
 
 2) PAD_CONFIG_READ
     11100000000000000000
@@ -89,6 +91,7 @@ In futuro sarà necessario automatizzare lo scan su tutta la matrice, che è gra
     Quindi la parola da inviare sarà:
 
         config_value = 0000 0011 000 00000
+        0000001100000000
     
 4. Invia la configurazione al pixel selezionato
 

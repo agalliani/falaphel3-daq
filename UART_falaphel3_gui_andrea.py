@@ -160,7 +160,7 @@ def start_gui():
             if ALREADY_ACCESSED_SPI==False:
                 print(f"First access to SPI, performing initialization", "initialization")
                 # 1) SPI Init: Write 0x7 to 0x30014
-                write_command(ser, 0x30014, 0x7)
+                write_command(ser, 0x30014,0x8)# 0x7)
                 
                 # 2) SPI Init: Write 0x1 to 0x30018
                 print(f"SPI initialization complete", "initialization")
