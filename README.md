@@ -96,15 +96,15 @@ In futuro sarà necessario automatizzare lo scan su tutta la matrice, che è gra
 4. Invia la configurazione al pixel selezionato
 
         config_value = SPI_WRITE_DATA | xxxxxxxxxxx | x
-    ```yyy``` sono 3 bit che indicano la colonna selezionata
 
-    ```xxxxx``` sono 5 bit che indicano la riga selezionata
-    
-    ```SPI_WRITE_DATA``` è il comando che è definito in ```TB_defines.sv``` come 0000
+       ```pixel_test_value = 11'h000;```
+        // 1'b0 - 1-b cap_25 - 5'b threshold - 1'b test_en - 1'b cap_50 - 1'b cap_csa_load - 1'b t_up - 1'b out_en
+                        
+        spi_cmd(`SPI_WRITE_DATA, {pixel_test_value, out_en}
 
     Quindi la parola da inviare sarà:
 
-        config_value = 0000 0011 000 00000
+        config_value = 00010000000000010001
 
 5. Controlla che la configurazione sia andata a buon fine, controllando quale configurazione è effettivamente stata impostata.
 
@@ -133,7 +133,7 @@ Per leggere il tot devo inviare il comando subito dopo l'iniezione: ```110000000
             01100000000000001010 //init pad
             00000000001100000000 // set pointer to 1st pixel
             00010000000000010001 // send config to the pointed pixel
-            00110000100000000101 // set inj2 command
-            00100000001000001111 // set inj1 command and start injection
+            0011 0000 1000 00000101 // set inj2 command
+            0010 0000 0010 00001111 // set inj1 command and start injection
             11000000000000000000 // read ToT
             --> response: "000000" | valid TOT (1 bit) | TOT value (5 bits)

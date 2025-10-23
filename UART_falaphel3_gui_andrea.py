@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import csv
 import datetime
+from fpga_config import FpgaConfigurator
+
 
 # Command delimiters: each one is a single-byte marker to define the start and end of a packet
 WRITE_CMD_START_BYTE = 0xA1
@@ -10,25 +12,7 @@ WRITE_CMD_END_BYTE = 0xA2
 READ_CMD_START_BYTE = 0xB1
 READ_CMD_END_BYTE = 0xB2
 
-
-# Commands to send to the FPGA via UART. They are the first 4 bits of the 20-bit configuration string.
-SPI_WRITE_POINTER = 0
-SPI_READ_POINTER = 8
-SPI_WRITE_DATA = 1
-SPI_READ_DATA = 9
-SPI_WRITE_INJ1 = 2
-SPI_READ_INJ1 = 10
-SPI_WRITE_INJ2 = 3
-SPI_READ_INJ2 = 11
-TOT_READ = 12
-TOA_READ = 13
-PAD_CONFIG_WRITE = 6
-PAD_CONFIG_READ = 14
-SPI_WRITE_STATUS = 7
-SPI_READ_STATUS = 15
-
-
-
+###################################################
 USE_SERIAL = True  # True per usare la porta reale, False per emulare
 
 ALREADY_ACCESSED_SPI = False  # Flag per evitare di accedere più volte alla SPI
@@ -225,14 +209,13 @@ def start_gui():
     read_addr_entry = tk.Entry(root)
     read_addr_entry.grid(row=6, column=1)
 
-
     tk.Button(root, text="Send Read", command=send_read).grid(row=7, column=0, columnspan=2)
 
     tk.Label(root, text="Read Result:").grid(row=8, column=0)
     result_var = tk.StringVar()
     result_entry = tk.Entry(root, textvariable=result_var, state='readonly')
     result_entry.grid(row=8, column=1)
-
+##################################################
     tk.Label(root, text="").grid(row=10, column=0, columnspan=2)
     tk.Frame(root, height=2, bd=1, relief=tk.SUNKEN).grid(row=11, column=0, columnspan=2, sticky="we", pady=5)
 
@@ -244,11 +227,27 @@ def start_gui():
     config_entry.insert(0, "0" * 20)
     config_entry.grid(row=12, column=1)
 
-    tk.Button(root, text="Send Configuration", command=send_configuration).grid(row=14, column=0, columnspan=2, pady=10)
+    tk.Button(root, text="Send Configuration", command=send_configuration).grid(row=13, column=0, columnspan=2, pady=10)
+##################################################
+
+    tk.Label(root, text="").grid(row=13, column=0, columnspan=2)
+    tk.Frame(root, height=2, bd=1, relief=tk.SUNKEN).grid(row=14, column=0, columnspan=2, sticky="we", pady=5)
+
+    section_label = tk.Label(root, text="Set injection section", font=("Arial", 10, "bold"))
+    section_label.grid(row=14, column=0, columnspan=2, pady=(5, 10))
+
+    #tk.Label(root, text="Configuration to be sent (20 bit):").grid(row=12, column=0)
+    #config_entry = tk.Entry(root)
+    #config_entry.insert(0, "0" * 20)
+    #config_entry.grid(row=12, column=1)
+
+    tk.Button(root, text="Inject", command=get_injection_settings).grid(row=16, column=0, columnspan=2, pady=10)
+##################################################
 
     root.mainloop()
 
 if __name__ == "__main__":
+    fpga_config = FpgaConfigurator()
     start_gui()
 
 
