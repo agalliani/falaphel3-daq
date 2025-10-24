@@ -6,7 +6,7 @@ from typing import Tuple
 # Importa AsicConfigurator (assumendo sia nel file asic_config.py)
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
-#from power_supply_controller import PowerSupplyService
+from power_supply_controller import PowerSupplyService
 import time
 import signal
 
@@ -27,7 +27,7 @@ class FpgaControlApp:
         self.asic_config = AsicConfigurator()
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
-        #self.ps_service = PowerSupplyService()
+        self.ps_service = PowerSupplyService()
         
         
 
@@ -132,7 +132,7 @@ class FpgaControlApp:
             self.ps_service.connect(resource_index=0)
             self.ps_service.set_channel_current(channel, 0.1)
             
-            messagebox.showinfo("Success", "Connected to Power Supply successfully.")
+            print("Success", "Connected to Power Supply successfully.")
         except Exception as e:
             messagebox.showerror("Error", f"Connection error: {e}")
 
@@ -140,7 +140,7 @@ class FpgaControlApp:
 
     # --- METODI DI CONFIGURAZIONE FPGA ---
 
-    def _send_spi_word(self, ser_int: SerialInterface, word_value: int) -> int:
+    def _send_spi_word(self, ser_int: SerialInterface, word_value: int):
         """Funzione helper per inviare una singola parola di configurazione SPI usando SerialInterface."""
         
         # L'inizializzazione SPI avviene solo al primo accesso (gestita dal flag)
@@ -237,8 +237,8 @@ class FpgaControlApp:
                 burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
             ) # Impostazioni Iniezione
 
-        tot_request = self.asic_config.get_total_spi_requests()
-        toa_request = self.asic_config.get_total_toa_spi_requests()        
+        tot_request = self.asic_config.get_save_tot_command()
+        toa_request = self.asic_config.get_save_toa_command()
 
         # Invia le parole usando _send_spi_word
         try:
@@ -265,9 +265,8 @@ class FpgaControlApp:
                 tot_response = self._send_spi_word(ser_int, tot_request)
                 toa_response = self._send_spi_word(ser_int, toa_request)
 
-                elaborated_tot, elaborated_toa = self.asic_config.elaborate_tot_toa_responses(tot_response, toa_response)
-                print(f"Received ToT: {elaborated_tot}, ToA: {elaborated_toa}")
-
+                # Elabora le risposte ricevute
+                self.asic_config.elaborate_received_tot(tot_response)
 
 
             #messagebox.showinfo("Success", "Pixel injection configuration sent successfully.")
