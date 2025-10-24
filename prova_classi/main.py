@@ -5,6 +5,8 @@ from typing import Tuple
 # Importa AsicConfigurator (assumendo sia nel file asic_config.py)
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
+from power_supply_controller import PowerSupplyService
+import time
 
 
 USE_SERIAL = True # True per usare la porta reale, False per emulare
@@ -21,6 +23,9 @@ class FpgaControlApp:
         # 1. ATTRIBUTI DI STATO
         self.asic_config = AsicConfigurator()
         self.spi_initialized = False # Flag per l'inizializzazione SPI
+
+        self.ps_service = PowerSupplyService()
+        
 
         # 2. VARIABILI DI CONTROLLO TKINTER
         self.result_var = tk.StringVar()
@@ -104,6 +109,18 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error processing CSV: {e}")
 
+    # --- METODI DI LAVORO CON POWER SUPPLY ---
+    def _connect_power_supply(self, channel: int = 1):
+        """Connette al Power Supply usando PowerSupplyService."""
+        try:
+            self.ps_service.connect(resource_index=0)
+            self.ps_service.set_channel_current(channel, 0.1)
+            
+            messagebox.showinfo("Success", "Connected to Power Supply successfully.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Connection error: {e}")
+
+    
 
     # --- METODI DI CONFIGURAZIONE FPGA ---
 
@@ -181,13 +198,13 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Communication error: {e}")
 
-    def _inject_a_pixel(self):
+    def _inject_a_pixel(self, x: int=0, y: int=0):
         """Genera e invia le impostazioni dei pad, set puntatore al pixel 0,0, invia configurazione di lavoro al 
         pixel puntato e impostazioni e di iniezione basate sui valori GUI."""
 
         # Genera le parole da inviare
         pad_word = self.asic_config.get_init_pad_string() # Usa i valori di default per ora
-        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=0,y_3b=0) # Selezione Pixel (0,0)
+        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y) # Selezione Pixel (0,0)
         config_pixel_word = self.asic_config.get_config_pointed_pixel(
             cap25_1b=0,
             dac_th_5b=0,
@@ -228,6 +245,28 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection configuration: {e}")
        
+
+    def _sweep_pixel_injection(self, x: int = 0, y: int = 0, number_of_injections: int = 1, start_voltage: int = 600, end_voltage: int = 200, step: int = 5):
+        """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia."""
+        try:
+            voltages = list(range(start_voltage, end_voltage - 1, -step))
+            for voltage in voltages:
+                print(f"Setting power supply voltage to {voltage} mV")
+                self.ps_service.set_channel_voltage(channel=1, voltage_mv=voltage)
+                # Attendi un breve periodo per la stabilizzazione
+                time.sleep(2)
+                self._inject_a_pixel(x=x, y=y)  # Configura il pixel e l'iniezione
+                time.sleep(2)
+
+                print(f"Completed injections at {voltage} mV\n")
+
+            #messagebox.showinfo("Success", "Pixel injection sweep completed successfully.")
+            print("Pixel injection sweep completed.")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
+
+
     # --- WIDGET E LAYOUT ---
     def _create_widgets(self):
         """Costruisce tutti i widget della GUI."""
@@ -283,7 +322,7 @@ class FpgaControlApp:
         tk.Label(frame_inj, text="Duty (0-15):").grid(row=3, column=0, padx=5, sticky="w")
         tk.Entry(frame_inj, textvariable=self.inj_duty).grid(row=3, column=1, padx=5, sticky="ew")
 
-        tk.Button(frame_inj, text="Generate and Inject", command=self._inject_a_pixel).grid(row=4, column=0, columnspan=2, pady=10)
+        tk.Button(frame_inj, text="Generate and Inject", command=self._sweep_pixel_injection).grid(row=4, column=0, columnspan=2, pady=10)
         
         # Sezione 4: CSV File - per ora non serve
         #frame_csv = ttk.LabelFrame(self.master, text="Process CSV File")
