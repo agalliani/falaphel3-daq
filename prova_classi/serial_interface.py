@@ -16,13 +16,13 @@ class DummySerial:
 
     def write(self, data):
         # Stampa l'operazione in formato esadecimale
-        print(f"DummySerial WRITE: {data.hex()}")
+        #print(f"DummySerial WRITE: {data.hex()}")
         return
 
     def read(self, size):
         # Restituisce dati finti (esempio: 4 byte 0xDEADBEEF)
         response = bytes([0xDE, 0xAD, 0xBE, 0xEF][:size])
-        print(f"DummySerial READ: {response.hex()}")
+        #print(f"DummySerial READ: {response.hex()}")
         return response
 
     def close(self):
@@ -59,11 +59,11 @@ class SerialInterface:
              raise ConnectionError("Serial port not open.")
              
         self.ser.write(command_bytes)
-        print("Sent:", " ".join(f"{b:02X}" for b in command_bytes))
+        #print("Sent:", " ".join(f"{b:02X}" for b in command_bytes))
         
         # Legge 4 byte di risposta standard
         response = self.ser.read(4)
-        print("Received:", " ".join(f"{b:02X}" for b in response))
+        ###print("Received:", " ".join(f"{b:02X}" for b in response)) ## unccomment for debug
         return response
 
     def write_register(self, address: int, data: int) -> bytes:

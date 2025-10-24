@@ -133,8 +133,8 @@ class FpgaConfigurator:
             (burst_8b & 0x3F)
         )
 
-        print(f"Injection Settings word 1: {word20_1:020b}")
-        print(f"Injection Settings word 2: {word20_2:020b}")
+        #print(f"Injection Settings word 1: {word20_1:020b}")
+        #print(f"Injection Settings word 2: {word20_2:020b}")
 
         return word20_1, word20_2
 

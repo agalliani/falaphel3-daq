@@ -22,10 +22,10 @@ class SpiCommand(enum.IntEnum):
 # (Definizione di SpiCommand Enum come sopra)
 # ...
 
-class FpgaConfigurator:
+class AsicConfigurator:
     """
     Gestisce la generazione delle parole di configurazione a 20 bit 
-    da inviare all'FPGA.
+    da inviare all'ASIC.
     """
 
     def __init__(self, spi_interface=None):
@@ -35,7 +35,7 @@ class FpgaConfigurator:
         può essere passata qui.
         """
         self.spi_interface = spi_interface
-        print("FpgaConfigurator pronto.")
+        print("AsicConfigurator pronto.")
 
 
     def get_init_pad_string(self, slvs_drv_strg_4b: int = 0b0101, slvs_cmm_mode_4b: int = 0b0000) -> int:
@@ -55,7 +55,7 @@ class FpgaConfigurator:
             ((slvs_cmm_mode_4b & 0xF) << 4) |
             (slvs_drv_strg_4b & 0xF)
         )
-        print(f"Config PAD word: {word20:020b}")
+        #print(f"Config PAD word: {word20:020b}")
         return word20
 
 
@@ -78,7 +78,7 @@ class FpgaConfigurator:
             ((y_3b & 0x7) << 5) |
             (x_5b & 0x1F)
         )
-        print(f"Pixel Pointer Selection word: {word20:020b}")
+        #print(f"Pixel Pointer Selection word: {word20:020b}")
         return word20
 
 
@@ -103,7 +103,7 @@ class FpgaConfigurator:
             ((t_up_1b & 0x1) << 1) |
             (out_en_1b & 0x1)
         )
-        print(f"Config Pointed Pixel word: {word20:020b}")
+        #print(f"Config Pointed Pixel word: {word20:020b}")
         return word20
 
 
@@ -133,8 +133,8 @@ class FpgaConfigurator:
             (burst_8b & 0x3F)
         )
 
-        print(f"Injection Settings word 1: {word20_1:020b}")
-        print(f"Injection Settings word 2: {word20_2:020b}")
+        #print(f"Injection Settings word 1: {word20_1:020b}")
+        #print(f"Injection Settings word 2: {word20_2:020b}")
 
         return word20_1, word20_2
 
