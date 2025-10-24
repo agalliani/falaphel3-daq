@@ -38,7 +38,7 @@ class AsicConfigurator:
         print("AsicConfigurator pronto.")
 
 
-    def get_init_pad_string(self, slvs_drv_strg_4b: int = 0b0101, slvs_cmm_mode_4b: int = 0b0000) -> int:
+    def get_init_pad_string(self, slvs_drv_strg_4b: int = 0b1010, slvs_cmm_mode_4b: int = 0b0000) -> int:
         """
         Genera la parola di configurazione per i PAD.
         [CMD(4)][0000(4)] [0000(4)] [slvs_cmm_mode(4)] [slvs_drv_strg(4)] = 20 bit

@@ -1,4 +1,3 @@
-import serial
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import csv
@@ -8,9 +7,7 @@ from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
 
 
-
-
-USE_SERIAL = False # True per usare la porta reale, False per emulare
+USE_SERIAL = True # True per usare la porta reale, False per emulare
 
 
 # ==============================================================================
@@ -25,7 +22,7 @@ class FpgaControlApp:
         self.asic_config = AsicConfigurator()
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
-        # 2. VARIABILI DI CONTROLLO TKINTER (omesse per brevità, sono corrette)
+        # 2. VARIABILI DI CONTROLLO TKINTER
         self.result_var = tk.StringVar()
         self.port_entry = tk.StringVar(value="COM3")
         self.baud_entry = tk.StringVar(value="115200")
@@ -35,9 +32,9 @@ class FpgaControlApp:
         self.config_entry = tk.StringVar(value="0" * 20)
 
         # Variabili per la configurazione dei PAD
-        
+        # ...
 
-        # Variabili per i nuovi input di configurazione iniezione
+        # Variabili per gli input di configurazione iniezione
         self.inj_bypass = tk.IntVar(value=0)
         self.inj_period = tk.IntVar(value=63)
         self.inj_burst = tk.IntVar(value=1)
@@ -46,7 +43,9 @@ class FpgaControlApp:
         # 3. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
 
-    # --- METODI DI CONNESSIONE E COMUNICAZIONE AGGIORNATI ---
+
+
+    # --- METODI DI CONNESSIONE E COMUNICAZIONE ---
     def _get_serial_interface(self) -> SerialInterface:
         """Helper per ottenere un'istanza di SerialInterface con i dati GUI."""
         try:
@@ -106,7 +105,7 @@ class FpgaControlApp:
             messagebox.showerror("Error", f"Error processing CSV: {e}")
 
 
-    # --- METODI DI CONFIGURAZIONE FPGA AGGIORNATI ---
+    # --- METODI DI CONFIGURAZIONE FPGA ---
 
     def _send_spi_word(self, ser_int: SerialInterface, word_value: int):
         """Funzione helper per inviare una singola parola di configurazione SPI usando SerialInterface."""
@@ -130,7 +129,8 @@ class FpgaControlApp:
         # 5) SPI CTRL Set: Write 0x2314 to 0x30010
         ser_int.write_register(0x30010, 0x2314) 
         # 7) SPI Read: Read from 0x30000 (per verifica/risposta)
-        ser_int.read_register(0x30000)
+        response = ser_int.read_register(0x30000)
+        #print(f"Response: {response:020b}")
 
 
     def _send_configuration(self):
@@ -182,7 +182,8 @@ class FpgaControlApp:
             messagebox.showerror("Error", f"Communication error: {e}")
 
     def _inject_a_pixel(self):
-        """Genera e invia le impostazioni dei pad, set puntatore al pixel 0,0, invia configurazione di lavoro al pixel puntato e impostazioni e di iniezione basate sui valori GUI."""
+        """Genera e invia le impostazioni dei pad, set puntatore al pixel 0,0, invia configurazione di lavoro al 
+        pixel puntato e impostazioni e di iniezione basate sui valori GUI."""
 
         # Genera le parole da inviare
         pad_word = self.asic_config.get_init_pad_string() # Usa i valori di default per ora
@@ -198,7 +199,7 @@ class FpgaControlApp:
             ) # Configurazione Pixel Puntato
         inj_word1, inj_word2 = self.asic_config.get_injection_settings(
                 bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
-                burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get()
+                burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
             ) # Impostazioni Iniezione
         
 

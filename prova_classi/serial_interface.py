@@ -1,3 +1,4 @@
+import serial 
 # --- SERIAL INTERFACE CLASS (New, Separated Logic) ---
 # --- CONSTANTS ---
 # Command delimiters (Rimangono esterni, sono costanti di protocollo)
