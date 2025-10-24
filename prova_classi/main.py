@@ -2,14 +2,15 @@ import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import csv
-from typing import Tuple
+from typing import Tuple, Optional
 # Importa AsicConfigurator (assumendo sia nel file asic_config.py)
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
 from power_supply_controller import PowerSupplyService
+from export_service import ExportService # Assumo che questa classe sia definita altrove
 import time
 import signal
-
+import statistics
 
 
 USE_SERIAL = True # True per usare la porta reale, False per emulare
@@ -30,6 +31,8 @@ class FpgaControlApp:
         self.ps_service = PowerSupplyService()
         self.exporter = ExportService()
         
+        # Le variabili self.tot_response e self.toa_response sono state RIMOVE 
+        # perché ora i dati vengono restituiti direttamente da _inject_a_pixel.
 
         # 2. VARIABILI DI CONTROLLO TKINTER
         self.result_var = tk.StringVar()
@@ -57,16 +60,12 @@ class FpgaControlApp:
         self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
         self.inj_pixel_y = tk.IntVar(value=0) # Pixel Y coordinate (0-7)
 
-        # Variabili misurazione (ToT/ToA)
-        self.tot_response = None
-        self.toa_response = None
-
         # 3. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
 
 
     # --- METODI DI CONNESSIONE E COMUNICAZIONE ---
-    # ... (Il resto dei metodi di comunicazione non cambia)
+    # ... (Non modificati) ...
 
     def _get_serial_interface(self) -> SerialInterface:
         """Helper per ottenere un'istanza di SerialInterface con i dati GUI."""
@@ -100,7 +99,7 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Read command error: {e}")
 
-   
+    
     # --- METODI DI LAVORO CON POWER SUPPLY ---
     def _connect_power_supply(self, channel: int = 1):
         """Connette al Power Supply usando PowerSupplyService."""
@@ -113,7 +112,6 @@ class FpgaControlApp:
             messagebox.showerror("Error", f"Connection error: {e}")
 
     
-
     # --- METODI DI CONFIGURAZIONE FPGA ---
 
     def _send_spi_word(self, ser_int: SerialInterface, word_value: int):
@@ -191,27 +189,25 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Communication error: {e}")
 
-    def _inject_a_pixel(self, x: int=0, y: int=0):
-        """Genera e invia le impostazioni dei pad, set puntatore al pixel (x,y),
-           invia configurazione di lavoro al pixel puntato e impostazioni di iniezione
-           basate sui valori GUI."""
-
+    # --- INIEZIONE PIXEL MODIFICATA: ORA RESTITUISCE I DATI ---
+    def _inject_a_pixel(self, x: int=0, y: int=0) -> Tuple[float, float]:
+        """Genera e invia le impostazioni di configurazione e iniezione per il pixel (x,y).
+           Richiede e restituisce i valori ToT e ToA elaborati.
+           
+           Ritorna:
+               Tuple[float, float]: I valori elaborati di (ToT, ToA).
+        """
         # Genera le parole da inviare
-        pad_word = self.asic_config.get_init_pad_string() # Usa i valori di default per ora
-        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y) # Selezione Pixel (X,Y)
+        pad_word = self.asic_config.get_init_pad_string()
+        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y)
         config_pixel_word = self.asic_config.get_config_pointed_pixel(
-            cap25_1b=0,
-            dac_th_5b=0,
-            test_en_1b=1,
-            cap50_1b=0,
-            cap_csa_load_1b=0,
-            t_up_1b=0,
-            out_en_1b=1
-            ) # Configurazione Pixel Puntato
+            cap25_1b=0, dac_th_5b=0, test_en_1b=1, cap50_1b=0,
+            cap_csa_load_1b=0, t_up_1b=0, out_en_1b=1
+            )
         inj_word1, inj_word2 = self.asic_config.get_injection_settings(
-                bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
-                burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
-            ) # Impostazioni Iniezione
+            bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
+            burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
+            )
 
         tot_request = self.asic_config.get_save_tot_command()
         toa_request = self.asic_config.get_save_toa_command()
@@ -221,42 +217,38 @@ class FpgaControlApp:
             with self._get_serial_interface() as ser_int:
                 print(f"Sending configuration for pixel ({x}, {y})")
                 
-                print("Sending PAD Initialization Word:")
+                # Sequenza di configurazione
                 self._send_spi_word(ser_int, pad_word)
-
-                print("Sending Pixel Pointer Selection Word:")
                 self._send_spi_word(ser_int, pointer_word)
-
-                print("Sending Config Pointed Pixel Word:")
                 self._send_spi_word(ser_int, config_pixel_word)
                 
-                # Invia l'iniezione (word2 prima, word1 con start_1b=1 per ultima)
-                print("Sending Injection Settings Word 2:") 
+                # Sequenza di iniezione
                 self._send_spi_word(ser_int, inj_word2)
-
-                print("Sending Injection Settings Word 1 (START):")
                 self._send_spi_word(ser_int, inj_word1)
 
+                # Richiesta ToT e ToA
                 print("Asking for ToT and ToA:")
-                tot_response = self._send_spi_word(ser_int, tot_request)
-                toa_response = self._send_spi_word(ser_int, toa_request)
+                tot_response_raw = self._send_spi_word(ser_int, tot_request)
+                toa_response_raw = self._send_spi_word(ser_int, toa_request)
 
-                # Elabora le risposte ricevute
-                self.tot_response = self.asic_config.elaborate_received_tot(tot_response)
-                self.toa_response = self.asic_config.elaborate_received_toa(toa_response)
-
+                # Elabora e restituisce i risultati
+                tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
+                toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
+                
+                return tot_value, toa_value
 
         except Exception as e:
-            messagebox.showerror("Error", f"Error during pixel injection configuration: {e}")
+            # Rilancia l'errore per essere gestito dal metodo chiamante
+            raise Exception(f"Error during pixel injection configuration/readout: {e}")
         
-
+    # --- SWEEP MODIFICATO: CATTURA DIRETTAMENTE I DATI RESTITUITI ---
     def _sweep_pixel_injection(self):
         """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia,
-           usando i valori della GUI."""
+           usando i valori della GUI. Calcola le statistiche e salva su file."""
         try:
+            # 0. Inizializzazione file di esportazione
             self.exporter.create_falaphel_file()
-            # Il file "data_falaphel_prin_251024_164700.tsv" (o simile) è ora creato nella cartella 'export'.
-            
+
             # 1. Recupera i valori dalla GUI
             start_voltage = self.sweep_start_v.get()
             end_voltage = self.sweep_end_v.get()
@@ -264,59 +256,86 @@ class FpgaControlApp:
             num_injections = self.num_injections.get()
             pixel_x = self.inj_pixel_x.get()
             pixel_y = self.inj_pixel_y.get()
-            
+
             if step <= 0:
                 raise ValueError("Lo step di tensione deve essere un numero intero positivo.")
 
-            # 2. Connessione e preparazione
+            # 2. Connessione al power supply e preparazione strumento
             self._connect_power_supply()
-            
-            # Genera la lista di tensioni (range decrescente)
-            # range(start, stop, step). Se start > end, step deve essere negativo.
+
+            # Genera la lista di tensioni
             sweep_step = -step if start_voltage > end_voltage else step
-            
-            # La funzione range non include l'ultimo elemento, quindi aggiungiamo 1 o -1 a seconda della direzione
             stop_value = end_voltage - 1 if start_voltage > end_voltage else end_voltage + 1
             voltages = list(range(start_voltage, stop_value, sweep_step))
-            
+
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
-            print(f"Voltage range: {start_voltage}mV to {end_voltage}mV, Step: {step}mV.")
 
             # 3. Esecuzione dello sweep
             for voltage in voltages:
-                self.ps_service.output_off(channel=1)
+                tot_results = []
+                toa_results = []
 
+                self.ps_service.output_off(channel=1)
                 print(f"--- Setting Vth to {voltage} mV ---")
                 self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
                 self.ps_service.output_on(channel=1)
 
                 # Attendi un breve periodo per la stabilizzazione
                 time.sleep(1)
-                
+
                 # Esegue N iniezioni per la tensione corrente
                 for i in range(num_injections):
-                    print(f"  -> Injection {i+1} of {num_injections}")
-                    self._inject_a_pixel(x=pixel_x, y=pixel_y)
+                    print(f"   -> Injection {i+1} of {num_injections}")
+
+                    # CHIAVE: Cattura i risultati direttamente dal ritorno della funzione
+                    tot_value, toa_value = self._inject_a_pixel(x=pixel_x, y=pixel_y)
+
+                    # Salva i risultati della singola iniezione
+                    tot_results.append(tot_value)
+                    toa_results.append(toa_value) # CORRETTO: usa toa_value
+                                                  # Nota: nel tuo codice avevi un errore di battitura 'tao_value'
+
                     time.sleep(1) # Breve pausa tra le iniezioni
-                    self.exporter.write_falaphel_data_row(
-                        voltage=voltage,
-                        tot_avg=self.tot_response,
-                        tot_std=0.0,  # Per ora non calcoliamo deviazione standard
-                        toa_avg=self.toa_response,
-                        toa_std=0.0, # Per ora non calcoliamo deviazione standard
-                        efficiency=0.0 # Per ora non calcoliamo efficienza
-                        )
 
-                print(f"Completed {num_injections} injections at {voltage} mV\n")
+                # 4. Calcolo delle statistiche (dopo tutte le N iniezioni)
+                if not tot_results:
+                    raise RuntimeError(f"Nessun dato ToT/ToA raccolto a {voltage} mV.")
 
-            messagebox.showinfo("Success", "Pixel injection sweep completed successfully.")
+                # Calcola media e deviazione standard. Gestisce il caso di singola iniezione.
+                avg_tot = statistics.mean(tot_results)
+                std_tot = statistics.stdev(tot_results) if num_injections > 1 else 0.0
+
+                avg_toa = statistics.mean(toa_results)
+                std_toa = statistics.stdev(toa_results) if num_injections > 1 else 0.0
+
+                efficiency_val = 0.0 # Placeholder
+                
+                # 5. Scrittura della riga sul file (una sola riga per tensione)
+                self.exporter.write_falaphel_data_row(
+                    voltage=voltage,
+                    tot_avg=avg_tot,
+                    tot_std=std_tot,
+                    toa_avg=avg_toa,
+                    toa_std=std_toa,
+                    efficiency=efficiency_val 
+                )
+
+                print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}\n")
+
+            messagebox.showinfo("Success", "Pixel injection sweep completed successfully. Data saved to file.")
             print("Pixel injection sweep completed.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
-
+        finally:
+            # Assicurati che l'alimentazione sia spenta alla fine, anche in caso di errore
+            try:
+                self.ps_service.output_off(channel=1)
+                print("Power Supply turned off.")
+            except Exception as e:
+                print(f"Warning: Could not turn off Power Supply: {e}")
 
     # --- WIDGET E LAYOUT ---
     def _create_widgets(self):
@@ -373,32 +392,8 @@ class FpgaControlApp:
         tk.Label(frame_inj, text="# Injections per Step:").grid(row=3, column=0, padx=5, sticky="w")
         tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=3, column=1, padx=5, sticky="ew")
 
-        # Configurazione Pixel
-        """
-        tk.Label(frame_inj, text="Pixel X (0-31):").grid(row=0, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_pixel_x).grid(row=0, column=3, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Pixel Y (0-7):").grid(row=1, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_pixel_y).grid(row=1, column=3, padx=5, sticky="ew")
-        """
-        # Configurazione Iniezione (Duty Cycle, Period etc.)
-        """
-        tk.Label(frame_inj, text="Bypass (0/1):").grid(row=2, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_bypass).grid(row=2, column=3, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Period (0-63):").grid(row=3, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_period).grid(row=3, column=3, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Burst (0-63):").grid(row=4, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_burst).grid(row=4, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Duty (0-15):").grid(row=4, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_duty).grid(row=4, column=3, padx=5, sticky="ew")
-        """
-
         # Bottone di avvio
         tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=5, column=0, columnspan=4, pady=10)
-        
-        # Sezione 4: CSV File - per ora non serve
-        #frame_csv = ttk.LabelFrame(self.master, text="Process CSV File")
-        #frame_csv.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
-        #tk.Button(frame_csv, text="Load & Send CSV", command=self._process_csv_file).grid(row=0, column=0, columnspan=2, pady=10)
 
 
 # ==============================================================================
