@@ -214,11 +214,10 @@ class AsicConfigurator:
             # print("ToT not valid: NaN")
             return float('nan')
 
-# ----------------------------------------------------------------------
-## Correzione di elaborate_received_toa
-# ----------------------------------------------------------------------
     def elaborate_received_toa(self, toa_response) -> float:
         """
+        DA CONTROLLARE!
+        
         Elabora i dati TOA ricevuti dall'ASIC.
         Restituisce il valore elaborato (float per 'nan' se non valido).
 
@@ -228,7 +227,7 @@ class AsicConfigurator:
         Format: "000" | valid TOA (1 bit) | TOA value (8 bits)
         """
 
-        # 1. Estrai l'intera parola intera dalla risposta (CORRETTO: usa toa_response)
+        # 1. Estrai l'intera parola intera dalla risposta
         i_resp = self.resp_to_int(toa_response)
         
         # 2. Isola i 9 bit di dato/validità (LSB della parola a 20 bit)
