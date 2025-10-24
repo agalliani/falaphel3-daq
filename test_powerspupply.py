@@ -2,7 +2,7 @@ import tkinter as tk
 import threading
 import time
 from tkinter import messagebox
-from prova_classi.powersupplyservice import PowerSupplyService
+from prova_classi.power_supply_controller import PowerSupplyService
 
 def test_voltage_sequence():
     """Funzione di test collegata al bottone."""
