@@ -19,9 +19,6 @@ class SpiCommand(enum.IntEnum):
     SPI_READ_STATUS = 15
 
 
-# (Definizione di SpiCommand Enum come sopra)
-# ...
-
 class AsicConfigurator:
     """
     Gestisce la generazione delle parole di configurazione a 20 bit 
@@ -87,7 +84,7 @@ class AsicConfigurator:
         Genera la parola per la configurazione del pixel puntato.
         [CMD(4)][0000(4)][0(1)][cap25(1)][dac_th(5)][test_en(1)][cap50(1)][cap_csa_load(1)][t_up(1)][out_en(1)] = 20 bit
         """
-        # (Omissis: le verifiche di range sono mantenute per chiarezza)
+        # (Omissis: le verifiche di range non cambiano)
 
         cmd = SpiCommand.SPI_WRITE_DATA
 
@@ -111,7 +108,7 @@ class AsicConfigurator:
         """
         Genera le due parole a 20 bit per la configurazione dell'iniezione.
         """
-        # (Omissis: le verifiche di range sono mantenute per chiarezza)
+        # (Omissis: le verifiche di range non cambiano)
 
         # Prima parola: [CMD(4)][0000(4)][00(2)][start(1)][bypass(1)][period(8)]
         cmd1 = SpiCommand.SPI_WRITE_INJ1
@@ -130,7 +127,10 @@ class AsicConfigurator:
             (cmd2.value << 16) |
             (0x0 << 12) |
             ((duty_4b & 0xF) << 8) |
-            (burst_8b & 0x3F)
+            # Nota: 'burst_8b & 0x3F' suggerisce 6 bit. 
+            # Ho lasciato 6 bit come nel codice originale per coerenza con 0x3F (6 bit), 
+            # anche se il commento diceva 8 bit.
+            (burst_8b & 0x3F) 
         )
 
         #print(f"Injection Settings word 1: {word20_1:020b}")
@@ -138,7 +138,7 @@ class AsicConfigurator:
 
         return word20_1, word20_2
     
-    def get_save_tot_command(self):
+    def get_save_tot_command(self) -> int:
         """
         Genera la parola per il comando di lettura TOT.
         [CMD(4)][0000(16)] = 20 bit
@@ -149,7 +149,7 @@ class AsicConfigurator:
         print(f"TOT Read Command word: {word20:020b}")
         return word20
 
-    def get_save_toa_command(self):
+    def get_save_toa_command(self) -> int:
         """
         Genera la parola per il comando di lettura TOA.
         [CMD(4)][0000(16)] = 20 bit
@@ -161,10 +161,17 @@ class AsicConfigurator:
         return word20
 
 
-    def resp_to_int(resp):
+    def resp_to_int(self, resp) -> int:
+        """
+        Converte una risposta grezza (bytes, list, tuple, o int) in un intero.
+        """
         if isinstance(resp, int):
             return resp
+        # Assumiamo che la risposta UART sia composta da 4 byte, 
+        # dove solo il LSB contiene la risposta 20 bit (o il ToT/ToA)
         if isinstance(resp, (bytes, bytearray)):
+            # Prende solo gli ultimi 3 byte (24 bit) o 4 byte se è 32 bit, 
+            # e li converte in un intero.
             return int.from_bytes(resp, byteorder='big') if resp else 0
         if isinstance(resp, (list, tuple)):
             return int.from_bytes(bytes(resp), byteorder='big') if resp else 0
@@ -172,56 +179,71 @@ class AsicConfigurator:
             return int(resp)
         except Exception:
             return 0
-
-    def elaborate_received_tot(self, tot_response):
+# ----------------------------------------------------------------------
+## Correzione di elaborate_received_tot
+# ----------------------------------------------------------------------
+    def elaborate_received_tot(self, tot_response) -> float:
         """
         Elabora i dati TOT ricevuti dall'ASIC.
-        Restituisce il valore elaborato.
+        Restituisce il valore elaborato (float per 'nan' se non valido).
 
-        TOT 12 bit word format:
-        Bit 0-5: ToT data (6 bits)
-        Bit 6-11: Not used (set to 0)
-
-        "000000" | valid TOT (1 bit) | TOT value (5 bits)
+        TOT 12 bit word format (risposta 12 bit):
+        [0000(4)] [00(2)] [valid TOT (1 bit)] [TOT value (5 bits)]
+        Quindi: [12 bit non usati] [4 bit CMD] [4 bit non usati] | [6 bit TOT data]
+        Assumiamo che la risposta completa sia 20 bit e vogliamo i 6 LSB.
+        
+        Format: "000000" | valid TOT (1 bit) | TOT value (5 bits)
         """
 
-        # Estrai i 6 bit meno significativi
-        i_tot = resp_to_int(tot_response)
-        lsb6 = i_tot & 0x3F            # 0b111111 -> ultimi 6 bit
-        validity_bit = (lsb6 >> 5) & 0x1  # MSB dei 6 bit (bit "6" nella descrizione)
-        five_bit_value = lsb6 & 0x1F    # primi 5 bit (i 5 meno significativi del gruppo)
+        # Estrai l'intera parola intera dalla risposta
+        i_resp = self.resp_to_int(tot_response)
+        
+        # Isola i 6 bit di dato/validità (LSB della parola a 20 bit)
+        lsb6 = i_resp & 0x3F             # 0b00000000000000111111 -> Isoliamo gli ultimi 6 bit
+        
+        # Il bit di validità è il bit 5 del gruppo (il 6° bit)
+        validity_bit = (lsb6 >> 5) & 0x1 
+        
+        # Il valore TOT è dato dai 5 bit meno significativi
+        five_bit_value = lsb6 & 0x1F     # 0b00011111 -> Isoliamo gli ultimi 5 bit
 
         if validity_bit == 1:
-            print(f"ToT valid: 5-bit value = {five_bit_value} (bits {five_bit_value:05b})")
-            return five_bit_value
+            # print(f"ToT valid: 5-bit value = {five_bit_value} (bits {five_bit_value:05b})")
+            return float(five_bit_value)
         else:
-            print("ToT not valid: NaN")
+            # print("ToT not valid: NaN")
             return float('nan')
 
-    def elaborate_received_toa(self, toa_response):
+# ----------------------------------------------------------------------
+## Correzione di elaborate_received_toa
+# ----------------------------------------------------------------------
+    def elaborate_received_toa(self, toa_response) -> float:
         """
         Elabora i dati TOA ricevuti dall'ASIC.
-        Restituisce il valore elaborato.
+        Restituisce il valore elaborato (float per 'nan' se non valido).
 
-        TOT 12 bit word format:
-        Bit 0-8: ToT data (8 bits)
-        Bit 9-11: Not used (set to 0)
-
-        "000" | valid TOA (1 bit) | TOA value (8 bits)
+        TOA 12 bit word format (risposta 12 bit):
+        [0000(4)] [valid TOA (1 bit)] [TOA value (8 bits)]
+        
+        Format: "000" | valid TOA (1 bit) | TOA value (8 bits)
         """
 
-        # Estrai i 8 bit meno significativi
-        i_tot = resp_to_int(tot_response)
-        lsb8 = i_tot & 0xFF            # 0b11111111 -> ultimi 8 bit
-        validity_bit = (lsb8 >> 7) & 0x1  # MSB dei 8 bit (bit "7" nella descrizione)
-        eight_bit_value = lsb8 & 0x7F    # primi 7 bit (i 7 meno significativi del gruppo)
+        # 1. Estrai l'intera parola intera dalla risposta (CORRETTO: usa toa_response)
+        i_resp = self.resp_to_int(toa_response)
+        
+        # 2. Isola i 9 bit di dato/validità (LSB della parola a 20 bit)
+        # 9 bit totali: 1 bit validità (bit 8) + 8 bit dato (bit 0-7)
+        lsb9 = i_resp & 0x1FF             # 0b00000000000000111111111 -> Isoliamo gli ultimi 9 bit
+        
+        # 3. Il bit di validità è il bit 8 del gruppo (il 9° bit)
+        validity_bit = (lsb9 >> 8) & 0x1 
+        
+        # 4. Il valore TOA è dato dagli 8 bit meno significativi
+        eight_bit_value = lsb9 & 0xFF     # 0b11111111 -> Isoliamo gli ultimi 8 bit
 
         if validity_bit == 1:
-            print(f"ToT valid: 7-bit value = {eight_bit_value} (bits {eight_bit_value:07b})")
-            return eight_bit_value
+            # print(f"ToA valid: 8-bit value = {eight_bit_value} (bits {eight_bit_value:08b})")
+            return float(eight_bit_value)
         else:
-            print("ToT not valid: NaN")
+            # print("ToA not valid: NaN")
             return float('nan')
-
-# Se si volessero anche le funzionalità di comunicazione, 
-# si potrebbero aggiungere metodi come 'send_word(self, word: int)' qui.
