@@ -10,6 +10,7 @@ from power_supply_controller import PowerSupplyService
 from export_service import ExportService # Assumo che questa classe sia definita altrove
 import time
 import signal
+import math
 import statistics
 
 
@@ -301,14 +302,28 @@ class FpgaControlApp:
                 if not tot_results:
                     raise RuntimeError(f"Nessun dato ToT/ToA raccolto a {voltage} mV.")
 
-                # Calcola media e deviazione standard. Gestisce il caso di singola iniezione.
-                avg_tot = statistics.mean(tot_results)
-                std_tot = statistics.stdev(tot_results) if num_injections > 1 else 0.0
+               # Filtra i risultati validi (non NaN)
+                valid_tot_results = [r for r in tot_results if not math.isnan(r)]
+                valid_toa_results = [r for r in toa_results if not math.isnan(r)]
 
-                avg_toa = statistics.mean(toa_results)
-                std_toa = statistics.stdev(toa_results) if num_injections > 1 else 0.0
+                if not valid_tot_results:
+                    # Gestisce il caso in cui tutti i dati sono NaN
+                    avg_tot, std_tot = float('nan'), float('nan')
+                    avg_toa, std_toa = float('nan'), float('nan')
+                    print(f"AVVISO: Nessun dato ToT/ToA valido raccolto a {voltage} mV.")
+                else:
+                    # Calcola media e deviazione standard solo sui dati validi
+                    avg_tot = statistics.mean(valid_tot_results)
+                    # La deviazione standard necessita di almeno 2 punti; altrimenti usa 0.0 o NaN
+                    std_tot = statistics.stdev(valid_tot_results) if len(valid_tot_results) > 1 else 0.0
 
-                efficiency_val = 0.0 # Placeholder
+                    avg_toa = statistics.mean(valid_toa_results)
+                    std_toa = statistics.stdev(valid_toa_results) if len(valid_toa_results) > 1 else 0.0
+
+                # Calcola l'efficienza: numero di hit / numero totale di iniezioni
+                # Un hit è conteggiato quando ToT > 0
+                num_hits = sum(1 for tot in tot_results if tot > 0)
+                efficiency_val = num_hits / num_injections if num_injections > 0 else 0.0
                 
                 # 5. Scrittura della riga sul file (una sola riga per tensione)
                 self.exporter.write_falaphel_data_row(
