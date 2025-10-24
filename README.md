@@ -100,7 +100,7 @@ In futuro sarà necessario automatizzare lo scan su tutta la matrice, che è gra
        ```pixel_test_value = 11'h000;```
         // 1'b0 - 1-b cap_25 - 5'b threshold - 1'b test_en - 1'b cap_50 - 1'b cap_csa_load - 1'b t_up - 1'b out_en
                         
-        spi_cmd(`SPI_WRITE_DATA, {pixel_test_value, out_en}
+        spi_cmd(`SPI_WRITE_DATA, {pixel_test_value, out_en})
 
     Quindi la parola da inviare sarà:
 
