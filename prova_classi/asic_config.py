@@ -160,25 +160,30 @@ class AsicConfigurator:
         print(f"TOA Read Command word: {word20:020b}")
         return word20
 
+
+    def resp_to_int(resp):
+        if isinstance(resp, int):
+            return resp
+        if isinstance(resp, (bytes, bytearray)):
+            return int.from_bytes(resp, byteorder='big') if resp else 0
+        if isinstance(resp, (list, tuple)):
+            return int.from_bytes(bytes(resp), byteorder='big') if resp else 0
+        try:
+            return int(resp)
+        except Exception:
+            return 0
+
     def elaborate_received_tot(self, tot_response):
         """
-        Elabora i dati TOT e TOA ricevuti dall'ASIC.
-        Restituisce i valori elaborati.
-        """
-        def resp_to_int(resp):
-            if isinstance(resp, int):
-                return resp
-            if isinstance(resp, (bytes, bytearray)):
-                return int.from_bytes(resp, byteorder='big') if resp else 0
-            if isinstance(resp, (list, tuple)):
-                return int.from_bytes(bytes(resp), byteorder='big') if resp else 0
-            try:
-                return int(resp)
-            except Exception:
-                return 0
+        Elabora i dati TOT ricevuti dall'ASIC.
+        Restituisce il valore elaborato.
 
-        #print("ToT response (hex):", "".join(f"{b:02X}" for b in tot_response) if isinstance(tot_response, (bytes, bytearray, list, tuple)) else hex(tot_response) if isinstance(tot_response, int) else tot_response)
-        #print("ToT response (bits):", to_bitstring(tot_response))
+        TOT 12 bit word format:
+        Bit 0-5: ToT data (6 bits)
+        Bit 6-11: Not used (set to 0)
+
+        "000000" | valid TOT (1 bit) | TOT value (5 bits)
+        """
 
         # Estrai i 6 bit meno significativi
         i_tot = resp_to_int(tot_response)
@@ -189,6 +194,31 @@ class AsicConfigurator:
         if validity_bit == 1:
             print(f"ToT valid: 5-bit value = {five_bit_value} (bits {five_bit_value:05b})")
             return five_bit_value
+        else:
+            print("ToT not valid: NaN")
+            return float('nan')
+
+    def elaborate_received_toa(self, toa_response):
+        """
+        Elabora i dati TOA ricevuti dall'ASIC.
+        Restituisce il valore elaborato.
+
+        TOT 12 bit word format:
+        Bit 0-8: ToT data (8 bits)
+        Bit 9-11: Not used (set to 0)
+
+        "000" | valid TOA (1 bit) | TOA value (8 bits)
+        """
+
+        # Estrai i 8 bit meno significativi
+        i_tot = resp_to_int(tot_response)
+        lsb8 = i_tot & 0xFF            # 0b11111111 -> ultimi 8 bit
+        validity_bit = (lsb8 >> 7) & 0x1  # MSB dei 8 bit (bit "7" nella descrizione)
+        eight_bit_value = lsb8 & 0x7F    # primi 7 bit (i 7 meno significativi del gruppo)
+
+        if validity_bit == 1:
+            print(f"ToT valid: 7-bit value = {eight_bit_value} (bits {eight_bit_value:07b})")
+            return eight_bit_value
         else:
             print("ToT not valid: NaN")
             return float('nan')

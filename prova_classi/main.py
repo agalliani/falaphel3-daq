@@ -28,7 +28,7 @@ class FpgaControlApp:
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
         self.ps_service = PowerSupplyService()
-        
+        self.exporter = ExportService()
         
 
         # 2. VARIABILI DI CONTROLLO TKINTER
@@ -40,8 +40,6 @@ class FpgaControlApp:
         self.read_addr_entry = tk.StringVar()
         self.config_entry = tk.StringVar(value="0" * 20)
 
-        # Variabili per la configurazione dei PAD
-        # ...
 
         # Variabili per gli input di configurazione iniezione
         self.inj_bypass = tk.IntVar(value=0)
@@ -59,6 +57,9 @@ class FpgaControlApp:
         self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
         self.inj_pixel_y = tk.IntVar(value=0) # Pixel Y coordinate (0-7)
 
+        # Variabili misurazione (ToT/ToA)
+        self.tot_response = None
+        self.toa_response = None
 
         # 3. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
@@ -99,32 +100,7 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Read command error: {e}")
 
-    def _process_csv_file(self):
-        """Gestisce la selezione e l'invio dei dati del file CSV."""
-        filepath = filedialog.askopenfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
-        if not filepath:
-            return
-
-        try:
-            with self._get_serial_interface() as ser_int:
-                with open(filepath, newline='') as csvfile:
-                    reader = csv.reader(csvfile)
-                    for address, row in enumerate(reader):
-                        if not row or not row[0].strip():
-                            continue
-                        try:
-                            # Assumiamo che la prima colonna contenga il dato esadecimale
-                            data = int(row[0].strip(), 16) 
-                            # L'indirizzo è l'indice della riga, come nel codice originale
-                            ser_int.write_register(address, data) 
-                        except ValueError:
-                            print(f"Invalid data at row {address}: {row[0]}")
-            
-            #messagebox.showinfo("Success", f"CSV file '{filepath.split('/')[-1]}' processed successfully.")
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Error processing CSV: {e}")
-
+   
     # --- METODI DI LAVORO CON POWER SUPPLY ---
     def _connect_power_supply(self, channel: int = 1):
         """Connette al Power Supply usando PowerSupplyService."""
@@ -266,10 +242,9 @@ class FpgaControlApp:
                 toa_response = self._send_spi_word(ser_int, toa_request)
 
                 # Elabora le risposte ricevute
-                self.asic_config.elaborate_received_tot(tot_response)
+                self.tot_response = self.asic_config.elaborate_received_tot(tot_response)
+                self.toa_response = self.asic_config.elaborate_received_toa(toa_response)
 
-
-            #messagebox.showinfo("Success", "Pixel injection configuration sent successfully.")
 
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection configuration: {e}")
@@ -279,6 +254,9 @@ class FpgaControlApp:
         """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia,
            usando i valori della GUI."""
         try:
+            self.exporter.create_falaphel_file()
+            # Il file "data_falaphel_prin_251024_164700.tsv" (o simile) è ora creato nella cartella 'export'.
+            
             # 1. Recupera i valori dalla GUI
             start_voltage = self.sweep_start_v.get()
             end_voltage = self.sweep_end_v.get()
@@ -320,6 +298,14 @@ class FpgaControlApp:
                     print(f"  -> Injection {i+1} of {num_injections}")
                     self._inject_a_pixel(x=pixel_x, y=pixel_y)
                     time.sleep(1) # Breve pausa tra le iniezioni
+                    self.exporter.write_falaphel_data_row(
+                        voltage=voltage,
+                        tot_avg=self.tot_response,
+                        tot_std=0.0,  # Per ora non calcoliamo deviazione standard
+                        toa_avg=self.toa_response,
+                        toa_std=0.0, # Per ora non calcoliamo deviazione standard
+                        efficiency=0.0 # Per ora non calcoliamo efficienza
+                        )
 
                 print(f"Completed {num_injections} injections at {voltage} mV\n")
 
