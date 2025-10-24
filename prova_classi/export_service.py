@@ -1,8 +1,6 @@
 import os
 import time
 from pathlib import Path
-import pandas as pd
-from typing import List, Tuple
 
 
 class Singleton(type):

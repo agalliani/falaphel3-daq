@@ -160,7 +160,7 @@ class AsicConfigurator:
         print(f"TOA Read Command word: {word20:020b}")
         return word20
 
-
+    @staticmethod
     def resp_to_int(resp):
         if isinstance(resp, int):
             return resp
@@ -186,7 +186,7 @@ class AsicConfigurator:
         """
 
         # Estrai i 6 bit meno significativi
-        i_tot = resp_to_int(tot_response)
+        i_tot = self.resp_to_int(tot_response)
         lsb6 = i_tot & 0x3F            # 0b111111 -> ultimi 6 bit
         validity_bit = (lsb6 >> 5) & 0x1  # MSB dei 6 bit (bit "6" nella descrizione)
         five_bit_value = lsb6 & 0x1F    # primi 5 bit (i 5 meno significativi del gruppo)
@@ -210,17 +210,17 @@ class AsicConfigurator:
         "000" | valid TOA (1 bit) | TOA value (8 bits)
         """
 
-        # Estrai i 8 bit meno significativi
-        i_tot = resp_to_int(tot_response)
-        lsb8 = i_tot & 0xFF            # 0b11111111 -> ultimi 8 bit
-        validity_bit = (lsb8 >> 7) & 0x1  # MSB dei 8 bit (bit "7" nella descrizione)
-        eight_bit_value = lsb8 & 0x7F    # primi 7 bit (i 7 meno significativi del gruppo)
+        # Estrai i 9 bit meno significativi
+        i_tot = self.resp_to_int(toa_response)
+        lsb9 = i_tot & 0x1FF            # 0b111111111 -> ultimi 9 bit
+        validity_bit = (lsb9 >> 8) & 0x1  # MSB dei 9 bit (bit "8" nella descrizione)
+        eight_bit_value = lsb9 & 0xFF    # primi 8 bit (i 8 meno significativi del gruppo)
 
         if validity_bit == 1:
-            print(f"ToT valid: 7-bit value = {eight_bit_value} (bits {eight_bit_value:07b})")
+            print(f"ToA valid: 8-bit value = {eight_bit_value} (bits {eight_bit_value:08b})")
             return eight_bit_value
         else:
-            print("ToT not valid: NaN")
+            print("ToA not valid: NaN")
             return float('nan')
 
 # Se si volessero anche le funzionalità di comunicazione, 
