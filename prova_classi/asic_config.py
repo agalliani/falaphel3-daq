@@ -137,6 +137,43 @@ class AsicConfigurator:
         #print(f"Injection Settings word 2: {word20_2:020b}")
 
         return word20_1, word20_2
+    
+    def get_save_tot_command(self) -> int:
+        """
+        Genera la parola per il comando di lettura TOT.
+        [CMD(4)][0000(16)] = 20 bit
+        """
+        cmd = SpiCommand.TOT_READ
+
+        word20 = (cmd.value << 16)
+        #print(f"TOT Read Command word: {word20:020b}")
+        return word20
+
+    def get_save_toa_command(self) -> int:
+        """
+        Genera la parola per il comando di lettura TOA.
+        [CMD(4)][0000(16)] = 20 bit
+        """
+        cmd = SpiCommand.TOA_READ
+
+        word20 = (cmd.value << 16)
+        #print(f"TOA Read Command word: {word20:020b}")
+        return word20
+
+    def elaborate_received_tot_toa(self, tot, toa) -> tuple[int, int]:
+        """
+        Elabora i dati TOT e TOA ricevuti dall'ASIC.
+        Restituisce i valori elaborati.
+        """
+        # TOT: "000000" & valid TOT (1 bit) & TOT value (5 bits) = 12 bits
+        tot_valid = (tot >> 5) & 0x1
+        tot_value = tot & 0x1F
+            
+        # TOA: "000" & valid TOA (1 bit) & TOA value (8 bits) = 12 bits
+        toa_valid = (toa >> 8) & 0x1
+        toa_value = toa & 0xFF
+            
+        return (tot_value, toa_value)
 
 # Se si volessero anche le funzionalità di comunicazione, 
 # si potrebbero aggiungere metodi come 'send_word(self, word: int)' qui.

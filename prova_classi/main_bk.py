@@ -6,7 +6,7 @@ from typing import Tuple
 # Importa AsicConfigurator (assumendo sia nel file asic_config.py)
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
-#from power_supply_controller import PowerSupplyService
+from power_supply_controller import PowerSupplyService
 import time
 import signal
 
@@ -27,7 +27,7 @@ class FpgaControlApp:
         self.asic_config = AsicConfigurator()
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
-        #self.ps_service = PowerSupplyService()
+        self.ps_service = PowerSupplyService()
         
         
 
@@ -48,25 +48,13 @@ class FpgaControlApp:
         self.inj_period = tk.IntVar(value=63)
         self.inj_burst = tk.IntVar(value=1)
         self.inj_duty = tk.IntVar(value=8)
-        
-        # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=600)   # Tensione di partenza in mV
-        self.sweep_end_v = tk.IntVar(value=200)     # Tensione di fine in mV
-        self.sweep_step_v = tk.IntVar(value=5)      # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=1)    # Numero di iniezioni per step
-        
-        # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
-        self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
-        self.inj_pixel_y = tk.IntVar(value=0) # Pixel Y coordinate (0-7)
-
 
         # 3. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
 
 
-    # --- METODI DI CONNESSIONE E COMUNICAZIONE ---
-    # ... (Il resto dei metodi di comunicazione non cambia)
 
+    # --- METODI DI CONNESSIONE E COMUNICAZIONE ---
     def _get_serial_interface(self) -> SerialInterface:
         """Helper per ottenere un'istanza di SerialInterface con i dati GUI."""
         try:
@@ -140,7 +128,7 @@ class FpgaControlApp:
 
     # --- METODI DI CONFIGURAZIONE FPGA ---
 
-    def _send_spi_word(self, ser_int: SerialInterface, word_value: int) -> int:
+    def _send_spi_word(self, ser_int: SerialInterface, word_value: int):
         """Funzione helper per inviare una singola parola di configurazione SPI usando SerialInterface."""
         
         # L'inizializzazione SPI avviene solo al primo accesso (gestita dal flag)
@@ -164,7 +152,6 @@ class FpgaControlApp:
         # 7) SPI Read: Read from 0x30000 (per verifica/risposta)
         response = ser_int.read_register(0x30000)
         #print(f"Response: {response:020b}")
-        return response
 
 
     def _send_configuration(self):
@@ -216,13 +203,12 @@ class FpgaControlApp:
             messagebox.showerror("Error", f"Communication error: {e}")
 
     def _inject_a_pixel(self, x: int=0, y: int=0):
-        """Genera e invia le impostazioni dei pad, set puntatore al pixel (x,y),
-           invia configurazione di lavoro al pixel puntato e impostazioni di iniezione
-           basate sui valori GUI."""
+        """Genera e invia le impostazioni dei pad, set puntatore al pixel 0,0, invia configurazione di lavoro al 
+        pixel puntato e impostazioni e di iniezione basate sui valori GUI."""
 
         # Genera le parole da inviare
         pad_word = self.asic_config.get_init_pad_string() # Usa i valori di default per ora
-        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y) # Selezione Pixel (X,Y)
+        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y) # Selezione Pixel (0,0)
         config_pixel_word = self.asic_config.get_config_pointed_pixel(
             cap25_1b=0,
             dac_th_5b=0,
@@ -236,99 +222,56 @@ class FpgaControlApp:
                 bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
                 burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
             ) # Impostazioni Iniezione
-
-        tot_request = self.asic_config.get_total_spi_requests()
-        toa_request = self.asic_config.get_total_toa_spi_requests()        
+        
 
         # Invia le parole usando _send_spi_word
         try:
             with self._get_serial_interface() as ser_int:
-                print(f"Sending configuration for pixel ({x}, {y})")
-                
                 print("Sending PAD Initialization Word:")
                 self._send_spi_word(ser_int, pad_word)
 
                 print("Sending Pixel Pointer Selection Word:")
-                self._send_spi_word(ser_int, pointer_word)
+                self._send_spi_word(ser_int, pointer_word)  
 
                 print("Sending Config Pointed Pixel Word:")
                 self._send_spi_word(ser_int, config_pixel_word)
                 
-                # Invia l'iniezione (word2 prima, word1 con start_1b=1 per ultima)
-                print("Sending Injection Settings Word 2:") 
+                print("Sending Injection Settings Word 2:") #invio prima la 2 perchè la 1 contiene il comando di start
                 self._send_spi_word(ser_int, inj_word2)
 
-                print("Sending Injection Settings Word 1 (START):")
+                print("Sending Injection Settings Word 1:")
                 self._send_spi_word(ser_int, inj_word1)
 
-                print("Asking for ToT and ToA:")
-                tot_response = self._send_spi_word(ser_int, tot_request)
-                toa_response = self._send_spi_word(ser_int, toa_request)
-
-                elaborated_tot, elaborated_toa = self.asic_config.elaborate_tot_toa_responses(tot_response, toa_response)
-                print(f"Received ToT: {elaborated_tot}, ToA: {elaborated_toa}")
-
-
+               
 
             #messagebox.showinfo("Success", "Pixel injection configuration sent successfully.")
 
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection configuration: {e}")
-        
+       
 
-    def _sweep_pixel_injection(self):
-        """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia,
-           usando i valori della GUI."""
+    def _sweep_pixel_injection(self, x: int = 0, y: int = 0, number_of_injections: int = 1, start_voltage: int = 600, end_voltage: int = 200, step: int = 5):
+        """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia."""
         try:
-            # 1. Recupera i valori dalla GUI
-            start_voltage = self.sweep_start_v.get()
-            end_voltage = self.sweep_end_v.get()
-            step = self.sweep_step_v.get()
-            num_injections = self.num_injections.get()
-            pixel_x = self.inj_pixel_x.get()
-            pixel_y = self.inj_pixel_y.get()
-            
-            if step <= 0:
-                raise ValueError("Lo step di tensione deve essere un numero intero positivo.")
-
-            # 2. Connessione e preparazione
             self._connect_power_supply()
-            
-            # Genera la lista di tensioni (range decrescente)
-            # range(start, stop, step). Se start > end, step deve essere negativo.
-            sweep_step = -step if start_voltage > end_voltage else step
-            
-            # La funzione range non include l'ultimo elemento, quindi aggiungiamo 1 o -1 a seconda della direzione
-            stop_value = end_voltage - 1 if start_voltage > end_voltage else end_voltage + 1
-            voltages = list(range(start_voltage, stop_value, sweep_step))
-            
-            print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
-            print(f"Voltage range: {start_voltage}mV to {end_voltage}mV, Step: {step}mV.")
-
-            # 3. Esecuzione dello sweep
+            voltages = list(range(start_voltage, end_voltage - 1, -step))
             for voltage in voltages:
                 self.ps_service.output_off(channel=1)
 
-                print(f"--- Setting Vth to {voltage} mV ---")
+                print(f"Setting power supply voltage to {voltage} mV")
                 self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
                 self.ps_service.output_on(channel=1)
 
                 # Attendi un breve periodo per la stabilizzazione
-                time.sleep(1)
-                
-                # Esegue N iniezioni per la tensione corrente
-                for i in range(num_injections):
-                    print(f"  -> Injection {i+1} of {num_injections}")
-                    self._inject_a_pixel(x=pixel_x, y=pixel_y)
-                    time.sleep(1) # Breve pausa tra le iniezioni
+                time.sleep(2)
+                self._inject_a_pixel()  # Configura il pixel e l'iniezione
+                time.sleep(2)
 
-                print(f"Completed {num_injections} injections at {voltage} mV\n")
+                print(f"Completed injections at {voltage} mV\n")
 
-            messagebox.showinfo("Success", "Pixel injection sweep completed successfully.")
+            #messagebox.showinfo("Success", "Pixel injection sweep completed successfully.")
             print("Pixel injection sweep completed.")
 
-        except ValueError as e:
-            messagebox.showerror("Input Error", f"Error in input values: {e}")
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
 
@@ -375,40 +318,20 @@ class FpgaControlApp:
         tk.Button(frame_raw_config, text="Send Configuration", command=self._send_configuration).grid(row=1, column=0, columnspan=2, pady=5)
 
         # Sezione 3: Injection Settings (Utilizzo di AsicConfigurator)
-        frame_inj = ttk.LabelFrame(self.master, text="Calibration/Injection Settings (AsicConfigurator)")
+        frame_inj = ttk.LabelFrame(self.master, text="Set Injection Section (AsicConfigurator)")
         frame_inj.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
-        # Configurazione Tensione/Sweep
-        tk.Label(frame_inj, text="Start Vth (mV):").grid(row=0, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=0, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="End Vth (mV):").grid(row=1, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_end_v).grid(row=1, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Step (mV):").grid(row=2, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=2, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="# Injections per Step:").grid(row=3, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=3, column=1, padx=5, sticky="ew")
+        # Input per i parametri di Injection (omessi per brevità, sono corretti)
+        tk.Label(frame_inj, text="Bypass (0/1):").grid(row=0, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.inj_bypass).grid(row=0, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="Period (0-63):").grid(row=1, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.inj_period).grid(row=1, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="Burst (0-63):").grid(row=2, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.inj_burst).grid(row=2, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="Duty (0-15):").grid(row=3, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.inj_duty).grid(row=3, column=1, padx=5, sticky="ew")
 
-        # Configurazione Pixel
-        """
-        tk.Label(frame_inj, text="Pixel X (0-31):").grid(row=0, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_pixel_x).grid(row=0, column=3, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Pixel Y (0-7):").grid(row=1, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_pixel_y).grid(row=1, column=3, padx=5, sticky="ew")
-        """
-        # Configurazione Iniezione (Duty Cycle, Period etc.)
-        """
-        tk.Label(frame_inj, text="Bypass (0/1):").grid(row=2, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_bypass).grid(row=2, column=3, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Period (0-63):").grid(row=3, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_period).grid(row=3, column=3, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Burst (0-63):").grid(row=4, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_burst).grid(row=4, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Duty (0-15):").grid(row=4, column=2, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.inj_duty).grid(row=4, column=3, padx=5, sticky="ew")
-        """
-
-        # Bottone di avvio
-        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=5, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Generate and Inject", command=self._sweep_pixel_injection).grid(row=4, column=0, columnspan=2, pady=10)
         
         # Sezione 4: CSV File - per ora non serve
         #frame_csv = ttk.LabelFrame(self.master, text="Process CSV File")
