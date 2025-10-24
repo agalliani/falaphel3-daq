@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import csv
@@ -7,6 +8,8 @@ from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
 from power_supply_controller import PowerSupplyService
 import time
+import signal
+
 
 
 USE_SERIAL = True # True per usare la porta reale, False per emulare
@@ -25,6 +28,7 @@ class FpgaControlApp:
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
         self.ps_service = PowerSupplyService()
+        
         
 
         # 2. VARIABILI DI CONTROLLO TKINTER
@@ -249,13 +253,18 @@ class FpgaControlApp:
     def _sweep_pixel_injection(self, x: int = 0, y: int = 0, number_of_injections: int = 1, start_voltage: int = 600, end_voltage: int = 200, step: int = 5):
         """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia."""
         try:
+            self._connect_power_supply()
             voltages = list(range(start_voltage, end_voltage - 1, -step))
             for voltage in voltages:
+                self.ps_service.output_off(channel=1)
+
                 print(f"Setting power supply voltage to {voltage} mV")
-                self.ps_service.set_channel_voltage(channel=1, voltage_mv=voltage)
+                self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
+                self.ps_service.output_on(channel=1)
+
                 # Attendi un breve periodo per la stabilizzazione
                 time.sleep(2)
-                self._inject_a_pixel(x=x, y=y)  # Configura il pixel e l'iniezione
+                self._inject_a_pixel()  # Configura il pixel e l'iniezione
                 time.sleep(2)
 
                 print(f"Completed injections at {voltage} mV\n")
@@ -333,6 +342,19 @@ class FpgaControlApp:
 # ==============================================================================
 # MAIN
 # ==============================================================================
+
+def signal_handler(sig, frame):
+    psService = PowerSupplyService()
+    psService.output_off(channel=1)
+    print("Ctrl+C pressed. Exiting gracefully.")
+    # other cleanup/exit code
+
+    sys.exit(0)
+
+# register the custom signal handler for Ctrl+C
+signal.signal(signal.SIGINT, signal_handler)
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = FpgaControlApp(root)
