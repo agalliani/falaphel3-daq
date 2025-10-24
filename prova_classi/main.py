@@ -52,10 +52,10 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
         
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=500)   # Tensione di partenza in mV
+        self.sweep_start_v = tk.IntVar(value=800)   # Tensione di partenza in mV
         self.sweep_end_v = tk.IntVar(value=100)     # Tensione di fine in mV
-        self.sweep_step_v = tk.IntVar(value=100)      # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=1)    # Numero di iniezioni per step
+        self.sweep_step_v = tk.IntVar(value=50)      # Step di tensione in mV
+        self.num_injections = tk.IntVar(value=10)    # Numero di iniezioni per step
         
         # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
         self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
@@ -295,7 +295,7 @@ class FpgaControlApp:
                     tot_results.append(tot_value)
                     toa_results.append(toa_value) # CORRETTO: usa toa_value
                                                   # Nota: nel tuo codice avevi un errore di battitura 'tao_value'
-
+                    print(str(tot_results))
                     time.sleep(1) # Breve pausa tra le iniezioni
 
                 # 4. Calcolo delle statistiche (dopo tutte le N iniezioni)
@@ -306,16 +306,22 @@ class FpgaControlApp:
                 valid_tot_results = [r for r in tot_results if not math.isnan(r)]
                 valid_toa_results = [r for r in toa_results if not math.isnan(r)]
 
+                print(valid_tot_results)
+
                 if not valid_tot_results:
                     # Gestisce il caso in cui tutti i dati sono NaN
                     avg_tot, std_tot = float('nan'), float('nan')
-                    avg_toa, std_toa = float('nan'), float('nan')
-                    print(f"AVVISO: Nessun dato ToT/ToA valido raccolto a {voltage} mV.")
+                    print(f"AVVISO: Nessun dato ToT valido raccolto a {voltage} mV.")
                 else:
                     # Calcola media e deviazione standard solo sui dati validi
                     avg_tot = statistics.mean(valid_tot_results)
                     # La deviazione standard necessita di almeno 2 punti; altrimenti usa 0.0 o NaN
                     std_tot = statistics.stdev(valid_tot_results) if len(valid_tot_results) > 1 else 0.0
+
+                if not valid_toa_results:
+                    avg_toa, std_toa = float('nan'), float('nan')
+                    print(f"AVVISO: Nessun dato ToA valido raccolto a {voltage} mV.")
+                else:        
 
                     avg_toa = statistics.mean(valid_toa_results)
                     std_toa = statistics.stdev(valid_toa_results) if len(valid_toa_results) > 1 else 0.0
