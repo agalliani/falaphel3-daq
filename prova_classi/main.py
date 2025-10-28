@@ -52,9 +52,9 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
         
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=800)   # Tensione di partenza in mV
-        self.sweep_end_v = tk.IntVar(value=100)     # Tensione di fine in mV
-        self.sweep_step_v = tk.IntVar(value=50)      # Step di tensione in mV
+        self.sweep_start_v = tk.IntVar(value=515)   # Tensione di partenza in mV
+        self.sweep_end_v = tk.IntVar(value=495)     # Tensione di fine in mV
+        self.sweep_step_v = tk.IntVar(value=1)      # Step di tensione in mV
         self.num_injections = tk.IntVar(value=10)    # Numero di iniezioni per step
         
         # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
@@ -264,6 +264,10 @@ class FpgaControlApp:
             # 2. Connessione al power supply e preparazione strumento
             self._connect_power_supply()
 
+            # Canale 2 del power supply fisso a 0V 
+            self.ps_service.set_channel_voltage(channel=2, voltage=0.0)
+            self.ps_service.output_on(channel=2)
+
             # Genera la lista di tensioni
             sweep_step = -step if start_voltage > end_voltage else step
             stop_value = end_voltage - 1 if start_voltage > end_voltage else end_voltage + 1
@@ -276,7 +280,7 @@ class FpgaControlApp:
                 tot_results = []
                 toa_results = []
 
-                self.ps_service.output_off(channel=1)
+                #self.ps_service.output_off(channel=1)
                 print(f"--- Setting Vth to {voltage} mV ---")
                 self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
                 self.ps_service.output_on(channel=1)
