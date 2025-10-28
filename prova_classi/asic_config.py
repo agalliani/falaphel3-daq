@@ -222,12 +222,17 @@ class AsicConfigurator:
         Restituisce il valore elaborato (float per 'nan' se non valido).
 
         TOA 12 bit word format (risposta 12 bit):
-        [0000(4)] [valid TOA (1 bit)] [TOA value (8 bits)]
+        [000(3)] [valid TOA (1 bit)] [TOA value (8 bits)]
         
         Format: "000" | valid TOA (1 bit) | TOA value (8 bits)
+
+        Elabora i dati TOA ricevuti dall'ASIC.
+        Restituisce il valore elaborato (float per 'nan' se non valido).
+
         """
 
         # 1. Estrai l'intera parola intera dalla risposta
+        print(f"Raw TOA response: {toa_response}")
         i_resp = self.resp_to_int(toa_response)
         
         # 2. Isola i 9 bit di dato/validità (LSB della parola a 20 bit)

@@ -137,3 +137,6 @@ Per leggere il tot devo inviare il comando subito dopo l'iniezione: ```110000000
             0010 0000 0010 00001111 // set inj1 command and start injection
             11000000000000000000 // read ToT
             --> response: "000000" | valid TOT (1 bit) | TOT value (5 bits)
+
+
+### Per leggere il TOA: "000" & valid TOA (1 bit) & TOA value (8 bits)
