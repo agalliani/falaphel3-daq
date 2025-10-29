@@ -144,7 +144,7 @@ def start_gui():
             if ALREADY_ACCESSED_SPI==False:
                 print(f"First access to SPI, performing initialization", "initialization")
                 # 1) SPI Init: Write 0x7 to 0x30014
-                write_command(ser, 0x30014,0x8)# 0x7)
+                write_command(ser, 0x30014,0xF)# 0x7)
                 
                 # 2) SPI Init: Write 0x1 to 0x30018
                 print(f"SPI initialization complete", "initialization")
@@ -230,6 +230,7 @@ def start_gui():
     tk.Button(root, text="Send Configuration", command=send_configuration).grid(row=13, column=0, columnspan=2, pady=10)
 ##################################################
 
+    """
     tk.Label(root, text="").grid(row=13, column=0, columnspan=2)
     tk.Frame(root, height=2, bd=1, relief=tk.SUNKEN).grid(row=14, column=0, columnspan=2, sticky="we", pady=5)
 
@@ -241,7 +242,8 @@ def start_gui():
     #config_entry.insert(0, "0" * 20)
     #config_entry.grid(row=12, column=1)
 
-    tk.Button(root, text="Inject", command=get_injection_settings).grid(row=16, column=0, columnspan=2, pady=10)
+    tk.Button(root, text="Inject", command=send_configuration).grid(row=16, column=0, columnspan=2, pady=10)
+    """
 ##################################################
 
     root.mainloop()

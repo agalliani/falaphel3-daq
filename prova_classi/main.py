@@ -52,10 +52,10 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
         
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=515)   # Tensione di partenza in mV
-        self.sweep_end_v = tk.IntVar(value=495)     # Tensione di fine in mV
+        self.sweep_start_v = tk.IntVar(value=500)   # Tensione di partenza in mV
+        self.sweep_end_v = tk.IntVar(value=40)     # Tensione di fine in mV
         self.sweep_step_v = tk.IntVar(value=1)      # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=10)    # Numero di iniezioni per step
+        self.num_injections = tk.IntVar(value=150)    # Numero di iniezioni per step
         
         # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
         self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
@@ -132,7 +132,7 @@ class FpgaControlApp:
         ser_int.write_register(0x30010, 0x2214) 
         # 4) SPI Data: Write config_value to 0x30000
         ser_int.write_register(0x30000, word_value) 
-        print(f"SPI 20-bit Data Write: {word_value:020b} (0x{word_value:05X})")
+        #print(f"SPI 20-bit Data Write: {word_value:020b} (0x{word_value:05X})")
 
         # 5) SPI CTRL Set: Write 0x2314 to 0x30010
         ser_int.write_register(0x30010, 0x2314) 
@@ -153,7 +153,7 @@ class FpgaControlApp:
             config_value = int(config_str, 2)
 
             with self._get_serial_interface() as ser_int:
-                print(f"SPI 20-bit Data Write: 0x{config_value:05X}")
+                #print(f"SPI 20-bit Data Write: 0x{config_value:05X}")
                 # Logica di SPI Init, Clear, Data, Set
                 self._send_spi_word(ser_int, config_value)
                 print(f"Configuration sent: {config_str}")

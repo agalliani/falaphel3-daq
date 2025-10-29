@@ -122,7 +122,7 @@ In futuro sarà necessario automatizzare lo scan su tutta la matrice, che è gra
 
 ```SPI_WRITE_INJ2 = 0011|0000|duty 4'|burst 8'``` invio per iniziare ```00110000001100000001```
 
-```SPI_WRITE_INJ1 = 0010|0000|start 1'|bypass 1'|period 8'``` invio ```00100000001011111111```
+```SPI_WRITE_INJ1 = 0010|0000|00 start 1'|bypass 1'|period 8'``` invio ```00100000001011111111```
 
 ```TOT_READ = 1100|
 
@@ -130,13 +130,16 @@ In futuro sarà necessario automatizzare lo scan su tutta la matrice, che è gra
 Per leggere il tot devo inviare il comando subito dopo l'iniezione: ```11000000000000000000```
 
 ### Test primo pixel
-            01100000000000001010 //init pad
+            01100000000000001010 //init pad     01100000000000000110
             00000000001100000000 // set pointer to 1st pixel
-            00010000000000010001 // send config to the pointed pixel
-            0011 0000 1000 00000101 // set inj2 command
+            00010000000000010001 // send config to the pointed pixel 00010000000000011001 //cap50 enabled
+            0011 0000 1000 00000001 // set inj2 command
+            00110000100000000001 // set inj2 command
             0010 0000 0010 00001111 // set inj1 command and start injection
+            00100000001000001111 // set inj1 command and start injection   00100000000000001111    00100000001000001111
             11000000000000000000 // read ToT
             --> response: "000000" | valid TOT (1 bit) | TOT value (5 bits)
+            11010000000000000000 // read ToA
 
 
 ### Per leggere il TOA: "000" & valid TOA (1 bit) & TOA value (8 bits)

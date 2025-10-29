@@ -194,6 +194,7 @@ class AsicConfigurator:
         
         Format: "000000" | valid TOT (1 bit) | TOT value (5 bits)
         """
+        print(f"Raw TOT response: {self.resp_to_int(tot_response):020b}")
 
         # Estrai l'intera parola intera dalla risposta
         i_resp = self.resp_to_int(tot_response)
@@ -232,7 +233,7 @@ class AsicConfigurator:
         """
 
         # 1. Estrai l'intera parola intera dalla risposta
-        print(f"Raw TOA response: {toa_response}")
+        print(f"Raw TOA response: {self.resp_to_int(toa_response):020b}")
         i_resp = self.resp_to_int(toa_response)
         
         # 2. Isola i 9 bit di dato/validità (LSB della parola a 20 bit)
