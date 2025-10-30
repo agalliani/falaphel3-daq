@@ -314,7 +314,7 @@ class FpgaControlApp:
                     toa_results.append(toa_value) # CORRETTO: usa toa_value
                                                   # Nota: nel tuo codice avevi un errore di battitura 'tao_value'
                     #print(str(tot_results))
-                    time.sleep(0.09) # Breve pausa tra le iniezioni
+                    time.sleep(0.001) # Breve pausa tra le iniezioni
 
                 # 4. Calcolo delle statistiche (dopo tutte le N iniezioni)
                 if not tot_results:
