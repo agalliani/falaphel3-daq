@@ -21,8 +21,8 @@ class ExportService(metaclass=Singleton):
     EXPORT_DIR_NAME = "export"
     
     # Intestazione specifica per il file 'data_falaphel_prin'
-    FALAPHEL_HEADER = "voltage\ttot_avg\ttot_std\ttoa_avg\ttoa_std\tefficiency\n"
-    
+    FALAPHEL_HEADER = "voltage\ttot_avg\ttot_std\ttoa_avg\ttoa_std\tefficiency_tot\tefficiency_toa\n"
+
     def __init__(self):
         # Utilizza Path per una gestione dei percorsi moderna e cross-platform
         self.directory: Path = Path(os.getcwd()) / self.EXPORT_DIR_NAME
@@ -76,7 +76,7 @@ class ExportService(metaclass=Singleton):
             raise
 
         
-    def write_falaphel_data_row(self, voltage: float, tot_avg: float, tot_std: float, toa_avg: float, toa_std: float, efficiency: float):
+    def write_falaphel_data_row(self, voltage: float, tot_avg: float, tot_std: float, toa_avg: float, toa_std: float, efficiency_tot: float, efficiency_toa: float):
         """
         Scrive una riga di dati nel file 'data_falaphel_prin_{{...}}.tsv'.
         """
@@ -87,8 +87,8 @@ class ExportService(metaclass=Singleton):
         try:
             # Formatta i dati in una stringa TSV
             row = (
-                f"{voltage}\t{tot_avg}\t{tot_std}\t"
-                f"{toa_avg}\t{toa_std}\t{efficiency}\n"
+                f"{round(voltage, 3)}\t{round(tot_avg, 3)}\t{round(tot_std, 3)}\t"
+                f"{round(toa_avg, 3)}\t{round(toa_std, 3)}\t{round(efficiency_tot, 3)}\t{round(efficiency_toa, 3)}\n"
             )
             
             # Scrivi in append

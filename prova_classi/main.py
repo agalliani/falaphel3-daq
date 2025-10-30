@@ -50,10 +50,10 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
         
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=500)   # Tensione di partenza in mV
-        self.sweep_end_v = tk.IntVar(value=40)     # Tensione di fine in mV
+        self.sweep_start_v = tk.IntVar(value=55)   # Tensione di partenza in mV
+        self.sweep_end_v = tk.IntVar(value=30)     # Tensione di fine in mV
         self.sweep_step_v = tk.IntVar(value=1)      # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=150)    # Numero di iniezioni per step
+        self.num_injections = tk.IntVar(value=100)    # Numero di iniezioni per step
         
         # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
         self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
@@ -219,7 +219,7 @@ class FpgaControlApp:
         # Invia le parole usando _send_spi_word
         try:
             with self._get_serial_interface() as ser_int:
-                print(f"Sending configuration for pixel ({x}, {y})")
+                #print(f"Sending configuration for pixel ({x}, {y})")
                 
                 # Sequenza di configurazione
                 self._send_spi_word(ser_int, pad_word)
@@ -231,7 +231,7 @@ class FpgaControlApp:
                 self._send_spi_word(ser_int, inj_word1_start)
 
                 # Richiesta ToT e ToA
-                print("Asking for ToT and ToA:")
+                #print("Asking for ToT and ToA:")
                 tot_response_raw = self._send_spi_word(ser_int, tot_request)
                 toa_response_raw = self._send_spi_word(ser_int, toa_request)
 
@@ -266,6 +266,8 @@ class FpgaControlApp:
             pixel_x = self.inj_pixel_x.get()
             pixel_y = self.inj_pixel_y.get()
 
+
+
             if step <= 0:
                 raise ValueError("Lo step di tensione deve essere un numero intero positivo.")
 
@@ -298,11 +300,11 @@ class FpgaControlApp:
                 self.ps_service.output_on(channel=1)
 
                 # Attendi un breve periodo per la stabilizzazione
-                time.sleep(1)
+                time.sleep(0.09)
 
                 # Esegue N iniezioni per la tensione corrente
                 for i in range(num_injections):
-                    print(f"   -> Injection {i+1} of {num_injections}")
+                    #print(f"   -> Injection {i+1} of {num_injections}")
 
                     # CHIAVE: Cattura i risultati direttamente dal ritorno della funzione
                     tot_value, toa_value = self._inject_a_pixel(x=pixel_x, y=pixel_y)
@@ -311,8 +313,8 @@ class FpgaControlApp:
                     tot_results.append(tot_value)
                     toa_results.append(toa_value) # CORRETTO: usa toa_value
                                                   # Nota: nel tuo codice avevi un errore di battitura 'tao_value'
-                    print(str(tot_results))
-                    time.sleep(1) # Breve pausa tra le iniezioni
+                    #print(str(tot_results))
+                    time.sleep(0.09) # Breve pausa tra le iniezioni
 
                 # 4. Calcolo delle statistiche (dopo tutte le N iniezioni)
                 if not tot_results:
@@ -344,9 +346,10 @@ class FpgaControlApp:
 
                 # Calcola l'efficienza: numero di hit / numero totale di iniezioni
                 # Un hit è conteggiato quando ToT > 0
-                num_hits = sum(1 for tot in tot_results if tot > 0)
-                efficiency_val = num_hits / num_injections if num_injections > 0 else 0.0
-                
+                num_hits_tot = sum(1 for tot in tot_results if tot > 0)
+                efficiency_tot = num_hits_tot / num_injections if num_injections > 0 else 0.0
+                num_hits_toa = sum(1 for toa in toa_results if toa > 0)
+                efficiency_toa = num_hits_toa / num_injections if num_injections > 0 else 0.0
                 # 5. Scrittura della riga sul file (una sola riga per tensione)
                 self.exporter.write_falaphel_data_row(
                     voltage=voltage,
@@ -354,10 +357,11 @@ class FpgaControlApp:
                     tot_std=std_tot,
                     toa_avg=avg_toa,
                     toa_std=std_toa,
-                    efficiency=efficiency_val 
+                    efficiency_tot=efficiency_tot,
+                    efficiency_toa=efficiency_toa
                 )
 
-                print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}\n")
+                print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}\n")
 
             messagebox.showinfo("Success", "Pixel injection sweep completed successfully. Data saved to file.")
             print("Pixel injection sweep completed.")

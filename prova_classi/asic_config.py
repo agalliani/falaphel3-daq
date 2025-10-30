@@ -146,7 +146,7 @@ class AsicConfigurator:
         cmd = SpiCommand.TOT_READ
 
         word20 = (cmd.value << 16)
-        print(f"TOT Read Command word: {word20:020b}")
+        #print(f"TOT Read Command word: {word20:020b}")
         return word20
 
     def get_save_toa_command(self) -> int:
@@ -157,7 +157,7 @@ class AsicConfigurator:
         cmd = SpiCommand.TOA_READ
 
         word20 = (cmd.value << 16)
-        print(f"TOA Read Command word: {word20:020b}")
+        #print(f"TOA Read Command word: {word20:020b}")
         return word20
 
 
@@ -194,7 +194,7 @@ class AsicConfigurator:
         
         Format: "000000" | valid TOT (1 bit) | TOT value (5 bits)
         """
-        print(f"Raw TOT response: {self.resp_to_int(tot_response):020b}")
+        #print(f"Raw TOT response: {self.resp_to_int(tot_response):020b}")
 
         # Estrai l'intera parola intera dalla risposta
         i_resp = self.resp_to_int(tot_response)
@@ -233,7 +233,7 @@ class AsicConfigurator:
         """
 
         # 1. Estrai l'intera parola intera dalla risposta
-        print(f"Raw TOA response: {self.resp_to_int(toa_response):020b}")
+        #print(f"Raw TOA response: {self.resp_to_int(toa_response):020b}")
         i_resp = self.resp_to_int(toa_response)
         
         # 2. Isola i 9 bit di dato/validità (LSB della parola a 20 bit)
