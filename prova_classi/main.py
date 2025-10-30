@@ -1,13 +1,11 @@
 import sys
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
-import csv
-from typing import Tuple, Optional
-# Importa AsicConfigurator (assumendo sia nel file asic_config.py)
+from tkinter import messagebox, ttk
+from typing import Tuple
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
 from power_supply_controller import PowerSupplyService
-from export_service import ExportService # Assumo che questa classe sia definita altrove
+from export_service import ExportService
 import time
 import signal
 import math
@@ -274,7 +272,11 @@ class FpgaControlApp:
 
             # Canale 2 del power supply fisso a 0V 
             self.ps_service.set_channel_voltage(channel=2, voltage=0.0)
+            self.ps_service.set_channel_current(channel=2, current=0.1)
             self.ps_service.output_on(channel=2)
+
+            self.ps_service.set_channel_current(channel=1, current=0.1)
+
 
             # Genera la lista di tensioni
             sweep_step = -step if start_voltage > end_voltage else step
