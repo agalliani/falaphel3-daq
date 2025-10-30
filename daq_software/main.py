@@ -61,6 +61,8 @@ class FpgaControlApp:
 
         # 3. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
+        # Injection delay in seconds (can be set to 0.0 if not required for hardware timing)
+        self.injection_delay = 0.001
 
 
     # --- METODI DI CONNESSIONE E COMUNICAZIONE ---
@@ -188,6 +190,17 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Communication error: {e}")
 
+
+    def inject_a_pixel_4button(self):
+        """Wrapper per chiamare _inject_a_pixel da bottone GUI."""
+        try:
+            tot_value, toa_value = self._inject_a_pixel(x=0, y=0)
+            print("")
+            print(f"ToT={tot_value}\t ToA={toa_value}")
+            #messagebox.showinfo("Injection Result", f"Pixel (0,0)\n Injection Results:\nToT: {tot_value}\nToA: {toa_value}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Pixel injection error: {e}")
+
     # --- INIEZIONE PIXEL MODIFICATA: ORA RESTITUISCE I DATI ---
     def _inject_a_pixel(self, x: int=0, y: int=0) -> Tuple[float, float]:
         """Genera e invia le impostazioni di configurazione e iniezione per il pixel (x,y).
@@ -288,11 +301,13 @@ class FpgaControlApp:
             voltages = list(range(start_voltage, stop_value, sweep_step))
 
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
-
+            tot_results = []
+            toa_results = []
             # 3. Esecuzione dello sweep
             for voltage in voltages:
-                tot_results = []
-                toa_results = []
+                tot_results.clear()
+                toa_results.clear()
+            
 
                 #self.ps_service.output_off(channel=1)
                 print(f"--- Setting Vth to {voltage} mV ---")
@@ -303,18 +318,34 @@ class FpgaControlApp:
                 time.sleep(0.09)
 
                 # Esegue N iniezioni per la tensione corrente
-                for i in range(num_injections):
-                    #print(f"   -> Injection {i+1} of {num_injections}")
+   
 
-                    # CHIAVE: Cattura i risultati direttamente dal ritorno della funzione
+                remaining = num_injections
+                while remaining > 0:
                     tot_value, toa_value = self._inject_a_pixel(x=pixel_x, y=pixel_y)
 
-                    # Salva i risultati della singola iniezione
+                    # both NaN -> canonicalize tot to 0.0 and keep toa as NaN   
+                    if math.isnan(tot_value) and math.isnan(toa_value):
+                        tot_results.append(0.0)
+                        toa_results.append(math.nan)
+                        remaining -= 1
+                        continue
+
+                    # ToA overflow (saturated) -> retry without decrementing remaining
+                    if not math.isnan(toa_value) and int(toa_value) == 255:
+                        # log if useful, then retry this injection
+                        continue
+
+                        # otherwise record and consume one attempt
                     tot_results.append(tot_value)
-                    toa_results.append(toa_value) # CORRETTO: usa toa_value
-                                                  # Nota: nel tuo codice avevi un errore di battitura 'tao_value'
+                    toa_results.append(toa_value)
+                    remaining -= 1
+                                
+               
+                    # NOTE: The following sleep is required for hardware timing stability.
+                    # If not needed, set self.injection_delay to 0.0 or remove this line.
+                    time.sleep(getattr(self, 'injection_delay', 0.001))
                     #print(str(tot_results))
-                    time.sleep(0.001) # Breve pausa tra le iniezioni
 
                 # 4. Calcolo delle statistiche (dopo tutte le N iniezioni)
                 if not tot_results:
@@ -424,7 +455,7 @@ class FpgaControlApp:
         frame_inj.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
 
-        tk.Button(frame_inj, text="Inject pixel 0,0", command=self._inject_a_pixel).grid(row=1, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Inject pixel 0,0", command=self.inject_a_pixel_4button).grid(row=1, column=0, columnspan=4, pady=10)
 
 
         # Configurazione Tensione/Sweep
