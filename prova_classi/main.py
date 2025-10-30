@@ -120,7 +120,7 @@ class FpgaControlApp:
         if not self.spi_initialized:
             print("First access to SPI, performing initialization")
             # 1) SPI Init: Write 0x8 to 0x30014
-            ser_int.write_register(0x30014, 0x8)
+            ser_int.write_register(0x30014, 0xF)
             # 2) SPI Init: Write 0x1 to 0x30018
             ser_int.write_register(0x30018, 0x1)
             self.spi_initialized = True
@@ -249,7 +249,8 @@ class FpgaControlApp:
             # Rilancia l'errore per essere gestito dal metodo chiamante
             raise Exception(f"Error during pixel injection configuration/readout: {e}")
         
-    # --- SWEEP MODIFICATO: CATTURA DIRETTAMENTE I DATI RESTITUITI ---
+
+
     def _sweep_pixel_injection(self):
         """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia,
            usando i valori della GUI. Calcola le statistiche e salva su file."""
@@ -418,20 +419,23 @@ class FpgaControlApp:
         frame_inj = ttk.LabelFrame(self.master, text="Calibration/Injection Settings")
         frame_inj.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
+
+        tk.Button(frame_inj, text="Inject pixel 0,0", command=self._inject_a_pixel).grid(row=1, column=0, columnspan=4, pady=10)
+
+
         # Configurazione Tensione/Sweep
-        """
-        tk.Label(frame_inj, text="Start Vth (mV):").grid(row=0, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=0, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="End Vth (mV):").grid(row=1, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_end_v).grid(row=1, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Step (mV):").grid(row=2, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=2, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="# Injections per Step:").grid(row=3, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=3, column=1, padx=5, sticky="ew")
-        """
+        
+        tk.Label(frame_inj, text="Start Vth (mV):").grid(row=2, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=2, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="End Vth (mV):").grid(row=3, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.sweep_end_v).grid(row=3, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="Step (mV):").grid(row=4, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=4, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="# Injections per Step:").grid(row=5, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=5, column=1, padx=5, sticky="ew")
+
         # Bottone di avvio
-        #tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=5, column=0, columnspan=4, pady=10)
-        tk.Button(frame_inj, text="Inject pixel 0,0", command=self._inject_a_pixel).grid(row=5, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=7, column=0, columnspan=4, pady=10)
 
 
 # ==============================================================================
