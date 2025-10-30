@@ -202,12 +202,17 @@ class FpgaControlApp:
         pad_word = self.asic_config.get_init_pad_string()
         pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y)
         config_pixel_word = self.asic_config.get_config_pointed_pixel(
-            cap25_1b=0, dac_th_5b=0, test_en_1b=1, cap50_1b=0,
+            cap25_1b=1, dac_th_5b=0, test_en_1b=1, cap50_1b=0,
             cap_csa_load_1b=0, t_up_1b=0, out_en_1b=1
             )
-        inj_word1, inj_word2 = self.asic_config.get_injection_settings(
+        inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
             bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
             burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
+            )
+
+        inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
+            bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
+            burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=0
             )
 
         tot_request = self.asic_config.get_save_tot_command()
@@ -224,8 +229,8 @@ class FpgaControlApp:
                 self._send_spi_word(ser_int, config_pixel_word)
                 
                 # Sequenza di iniezione
-                self._send_spi_word(ser_int, inj_word2)
-                self._send_spi_word(ser_int, inj_word1)
+                self._send_spi_word(ser_int, inj_word2_start)
+                self._send_spi_word(ser_int, inj_word1_start)
 
                 # Richiesta ToT e ToA
                 print("Asking for ToT and ToA:")
@@ -235,6 +240,9 @@ class FpgaControlApp:
                 # Elabora e restituisce i risultati
                 tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
                 toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
+
+                self._send_spi_word(ser_int, inj_word1_stop) # necessario per ripristinare il funzionamento del pixel dopo l'iniezione e essere pronti per la successiva iniezione
+
                 
                 return tot_value, toa_value
 
@@ -404,10 +412,11 @@ class FpgaControlApp:
         tk.Button(frame_raw_config, text="Send Configuration", command=self._send_configuration).grid(row=1, column=0, columnspan=2, pady=5)
 
         # Sezione 3: Injection Settings (Utilizzo di AsicConfigurator)
-        frame_inj = ttk.LabelFrame(self.master, text="Calibration/Injection Settings (AsicConfigurator)")
+        frame_inj = ttk.LabelFrame(self.master, text="Calibration/Injection Settings")
         frame_inj.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
         # Configurazione Tensione/Sweep
+        """
         tk.Label(frame_inj, text="Start Vth (mV):").grid(row=0, column=0, padx=5, sticky="w")
         tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=0, column=1, padx=5, sticky="ew")
         tk.Label(frame_inj, text="End Vth (mV):").grid(row=1, column=0, padx=5, sticky="w")
@@ -416,9 +425,10 @@ class FpgaControlApp:
         tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=2, column=1, padx=5, sticky="ew")
         tk.Label(frame_inj, text="# Injections per Step:").grid(row=3, column=0, padx=5, sticky="w")
         tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=3, column=1, padx=5, sticky="ew")
-
+        """
         # Bottone di avvio
-        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=5, column=0, columnspan=4, pady=10)
+        #tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=5, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Inject pixel 0,0", command=self._inject_a_pixel).grid(row=5, column=0, columnspan=4, pady=10)
 
 
 # ==============================================================================
