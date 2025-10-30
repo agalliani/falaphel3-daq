@@ -239,9 +239,10 @@ class FpgaControlApp:
                 tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
                 toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
 
-                self._send_spi_word(ser_int, inj_word1_stop) # necessario per ripristinare il funzionamento del pixel dopo l'iniezione e essere pronti per la successiva iniezione
+             # necessario per ripristinare il funzionamento del pixel dopo l'iniezione e essere pronti per la successiva iniezione
+                self._send_spi_word(ser_int, inj_word2_stop)
+                self._send_spi_word(ser_int, inj_word1_stop)
 
-                
                 return tot_value, toa_value
 
         except Exception as e:
