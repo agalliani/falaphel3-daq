@@ -209,7 +209,7 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Pixel injection error: {e}")
 
-    # --- INIEZIONE PIXEL MODIFICATA: ORA RESTITUISCE I DATI ---
+    # --- INIEZIONE PIXEL ---
     def _inject_a_pixel(self, x: int=0, y: int=0) -> Tuple[float, float]:
         """Genera e invia le impostazioni di configurazione e iniezione per il pixel (x,y).
            Richiede e restituisce i valori ToT e ToA elaborati.
@@ -311,6 +311,11 @@ class FpgaControlApp:
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
             tot_results = []
             toa_results = []
+
+            # --- CRONOMETRAGGIO INIZIO ---
+            start_time = time.time()
+            # ---------------------------
+
             # 3. Esecuzione dello sweep
             for voltage in voltages:
                 tot_results.clear()
@@ -402,8 +407,17 @@ class FpgaControlApp:
 
                 print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}\n")
 
-            messagebox.showinfo("Success", "Pixel injection sweep completed successfully. Data saved to file.")
-            print("Pixel injection sweep completed.")
+
+            # --- CRONOMETRAGGIO FINE ---
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            # -------------------------
+
+            # 6. Risultato finale
+            print(f"Pixel injection sweep completed.")
+            print(f"⏳ **Tempo Totale di Esecuzione dello Sweep:** **{elapsed_time:.2f} secondi**")
+            
+            messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")
