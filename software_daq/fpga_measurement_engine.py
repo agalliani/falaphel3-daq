@@ -42,6 +42,9 @@ class FpgaMeasurementEngine:
         self.spi_initialized = False # Flag per l'inizializzazione SPI
         self.injection_delay = 0.001 # Ritardo tra le iniezioni
 
+        # Variabile per tracciare l'ultimo pixel configurato: (x, y)
+        self._last_configured_pixel = None
+
     def _get_serial_interface(self, port: str, baud: int) -> SerialInterface:
         """Helper per ottenere un'istanza di SerialInterface con i dati passati."""
         try:
