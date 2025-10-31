@@ -12,7 +12,7 @@ import math
 import statistics
 
 
-USE_SERIAL = False # True per usare la porta reale, False per emulare
+USE_SERIAL = True # True per usare la porta reale, False per emulare
 
 
 # ==============================================================================
@@ -468,13 +468,13 @@ class FpgaControlApp:
 
         # Configurazione Coordinate (riutilizzate, sebbene già esistano)
         tk.Label(frame_pixel_config, text="Pixel X (0-31):").grid(row=0, column=0, padx=5, sticky="w")
-        tk.Entry(frame_pixel_config, textvariable=self.inj_pixel_x, width=5).grid(row=0, column=1, padx=5, sticky="ew")
+        tk.Spinbox(frame_pixel_config, textvariable=self.inj_pixel_x, from_=0, to=31, width=5).grid(row=0, column=1, padx=5, sticky="ew")
         tk.Label(frame_pixel_config, text="Pixel Y (0-7):").grid(row=0, column=2, padx=5, sticky="w")
-        tk.Entry(frame_pixel_config, textvariable=self.inj_pixel_y, width=5).grid(row=0, column=3, padx=5, sticky="ew")
+        tk.Spinbox(frame_pixel_config, textvariable=self.inj_pixel_y, from_=0, to=7, width=5).grid(row=0, column=3, padx=5, sticky="ew")
         
         # Configurazione DAC_TH
         tk.Label(frame_pixel_config, text="DAC_TH (0-31):").grid(row=1, column=0, padx=5, sticky="w")
-        tk.Entry(frame_pixel_config, textvariable=self.config_dac_th, width=5).grid(row=1, column=1, padx=5, sticky="ew")
+        tk.Spinbox(frame_pixel_config, textvariable=self.config_dac_th, from_=0, to=31, width=5).grid(row=1, column=1, padx=5, sticky="ew")
 
         # Checkbox per i bit di configurazione
         tk.Checkbutton(frame_pixel_config, text="cap50", variable=self.config_cap50).grid(row=2, column=0, padx=5, sticky="w")
@@ -484,20 +484,20 @@ class FpgaControlApp:
         tk.Checkbutton(frame_pixel_config, text="t_up", variable=self.config_t_up).grid(row=3, column=1, padx=5, sticky="w")
         tk.Checkbutton(frame_pixel_config, text="out_en", variable=self.config_out_en).grid(row=3, column=2, padx=5, sticky="w")
 
-        # Bottone di iniezione (rimane, ora usa le variabili del pixel)
-        tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button).grid(row=4, column=0, columnspan=4, pady=10)
+        # Bottone di iniezione 
+        tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button, bg="light blue").grid(row=4, column=0, columnspan=4, pady=10)
 
         tk.Label(frame_inj, text="Start Vth (mV):").grid(row=5, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=5, column=1, padx=5, sticky="ew")
+        tk.Spinbox(frame_inj, textvariable=self.sweep_start_v, from_=0, to=1000, width=10).grid(row=5, column=1, padx=5, sticky="ew")
         tk.Label(frame_inj, text="End Vth (mV):").grid(row=6, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_end_v).grid(row=6, column=1, padx=5, sticky="ew")
+        tk.Spinbox(frame_inj, textvariable=self.sweep_end_v, from_=0, to=1000, width=10).grid(row=6, column=1, padx=5, sticky="ew")
         tk.Label(frame_inj, text="Step (mV):").grid(row=7, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=7, column=1, padx=5, sticky="ew")
+        tk.Spinbox(frame_inj, textvariable=self.sweep_step_v, from_=1, to=100, width=10).grid(row=7, column=1, padx=5, sticky="ew")
         tk.Label(frame_inj, text="# Injections per Step:").grid(row=8, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=8, column=1, padx=5, sticky="ew")
+        tk.Spinbox(frame_inj, textvariable=self.num_injections, from_=1, to=10000, width=10).grid(row=8, column=1, padx=5, sticky="ew")
 
         # Bottone di avvio
-        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=9, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection, bg="light green").grid(row=9, column=0, columnspan=4, pady=10)
 
 
 # ==============================================================================
