@@ -4,7 +4,7 @@ from tkinter import messagebox, ttk
 from typing import Tuple
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
-from power_supply_controller import PowerSupplyService
+#from power_supply_controller import PowerSupplyService
 from export_service import ExportService
 import time
 import signal
@@ -12,7 +12,7 @@ import math
 import statistics
 
 
-USE_SERIAL = True # True per usare la porta reale, False per emulare
+USE_SERIAL = False # True per usare la porta reale, False per emulare
 
 
 # ==============================================================================
@@ -27,7 +27,7 @@ class FpgaControlApp:
         self.asic_config = AsicConfigurator()
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
-        self.ps_service = PowerSupplyService()
+        #self.ps_service = PowerSupplyService()
         self.exporter = ExportService()
         
         # Le variabili self.tot_response e self.toa_response sono state RIMOVE 
@@ -41,7 +41,6 @@ class FpgaControlApp:
         self.write_data_entry = tk.StringVar()
         self.read_addr_entry = tk.StringVar()
         self.config_entry = tk.StringVar(value="0" * 20)
-
 
         # Variabili per gli input di configurazione iniezione
         self.inj_bypass = tk.IntVar(value=0)
@@ -58,6 +57,15 @@ class FpgaControlApp:
         # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
         self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
         self.inj_pixel_y = tk.IntVar(value=0) # Pixel Y coordinate (0-7)
+
+        # VARIABILI PER LA CONFIGURAZIONE DEL PIXEL
+        self.config_cap50 = tk.IntVar(value=1) # Bit cap50 (1b)
+        self.config_cap25 = tk.IntVar(value=0) # Bit cap25 (1b) - Mantenuto 1 come nel codice esistente
+        self.config_cap_csa_load = tk.IntVar(value=0) # Bit cap_csa_load (1b)
+        self.config_dac_th = tk.IntVar(value=0) # Bit dac_th (5b) - Aggiunto come input
+        self.config_test_en = tk.IntVar(value=1) # Bit test_en (1b) - Mantenuto 1
+        self.config_t_up = tk.IntVar(value=0) # Bit t_up (1b)
+        self.config_out_en = tk.IntVar(value=1) # Bit out_en (1b) - Mantenuto 1
 
         # 3. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
@@ -191,7 +199,7 @@ class FpgaControlApp:
             messagebox.showerror("Error", f"Communication error: {e}")
 
 
-    def inject_a_pixel_4button(self):
+    def inject_single_pixel_4button(self):
         """Wrapper per chiamare _inject_a_pixel da bottone GUI."""
         try:
             tot_value, toa_value = self._inject_a_pixel(x=0, y=0)
@@ -454,23 +462,42 @@ class FpgaControlApp:
         frame_inj = ttk.LabelFrame(self.master, text="Calibration/Injection Settings")
         frame_inj.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
+        # Configurazione Pixel Puntato
+        frame_pixel_config = ttk.LabelFrame(frame_inj, text="Pixel Configuration")
+        frame_pixel_config.grid(row=0, column=0, columnspan=4, padx=5, pady=5, sticky="ew")
 
-        tk.Button(frame_inj, text="Inject pixel 0,0", command=self.inject_a_pixel_4button).grid(row=1, column=0, columnspan=4, pady=10)
-
-
-        # Configurazione Tensione/Sweep
+        # Configurazione Coordinate (riutilizzate, sebbene già esistano)
+        tk.Label(frame_pixel_config, text="Pixel X (0-31):").grid(row=0, column=0, padx=5, sticky="w")
+        tk.Entry(frame_pixel_config, textvariable=self.inj_pixel_x, width=5).grid(row=0, column=1, padx=5, sticky="ew")
+        tk.Label(frame_pixel_config, text="Pixel Y (0-7):").grid(row=0, column=2, padx=5, sticky="w")
+        tk.Entry(frame_pixel_config, textvariable=self.inj_pixel_y, width=5).grid(row=0, column=3, padx=5, sticky="ew")
         
-        tk.Label(frame_inj, text="Start Vth (mV):").grid(row=2, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=2, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="End Vth (mV):").grid(row=3, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_end_v).grid(row=3, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="Step (mV):").grid(row=4, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=4, column=1, padx=5, sticky="ew")
-        tk.Label(frame_inj, text="# Injections per Step:").grid(row=5, column=0, padx=5, sticky="w")
-        tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=5, column=1, padx=5, sticky="ew")
+        # Configurazione DAC_TH
+        tk.Label(frame_pixel_config, text="DAC_TH (0-31):").grid(row=1, column=0, padx=5, sticky="w")
+        tk.Entry(frame_pixel_config, textvariable=self.config_dac_th, width=5).grid(row=1, column=1, padx=5, sticky="ew")
+
+        # Checkbox per i bit di configurazione
+        tk.Checkbutton(frame_pixel_config, text="cap50", variable=self.config_cap50).grid(row=2, column=0, padx=5, sticky="w")
+        tk.Checkbutton(frame_pixel_config, text="cap25", variable=self.config_cap25).grid(row=2, column=1, padx=5, sticky="w")
+        tk.Checkbutton(frame_pixel_config, text="cap_csa_load", variable=self.config_cap_csa_load).grid(row=2, column=2, padx=5, sticky="w")
+        tk.Checkbutton(frame_pixel_config, text="test_en", variable=self.config_test_en).grid(row=3, column=0, padx=5, sticky="w")
+        tk.Checkbutton(frame_pixel_config, text="t_up", variable=self.config_t_up).grid(row=3, column=1, padx=5, sticky="w")
+        tk.Checkbutton(frame_pixel_config, text="out_en", variable=self.config_out_en).grid(row=3, column=2, padx=5, sticky="w")
+
+        # Bottone di iniezione (rimane, ora usa le variabili del pixel)
+        tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button).grid(row=4, column=0, columnspan=4, pady=10)
+
+        tk.Label(frame_inj, text="Start Vth (mV):").grid(row=5, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.sweep_start_v).grid(row=5, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="End Vth (mV):").grid(row=6, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.sweep_end_v).grid(row=6, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="Step (mV):").grid(row=7, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.sweep_step_v).grid(row=7, column=1, padx=5, sticky="ew")
+        tk.Label(frame_inj, text="# Injections per Step:").grid(row=8, column=0, padx=5, sticky="w")
+        tk.Entry(frame_inj, textvariable=self.num_injections).grid(row=8, column=1, padx=5, sticky="ew")
 
         # Bottone di avvio
-        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=7, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection).grid(row=9, column=0, columnspan=4, pady=10)
 
 
 # ==============================================================================
