@@ -172,9 +172,73 @@ class FpgaControlApp:
                 'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
                 'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
             }
+            
 
             # Delega l'intera operazione di sweep all'Engine
             elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, pixel_config_params, inj_params)
+            
+            messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
+
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Error in input values: {e}")
+        except RuntimeError as e:
+            messagebox.showerror("Service Error", f"{e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
+        
+        
+    def _sweep_pixel_injection_opt(self):
+        """Prepara i parametri dello sweep e delega all'Engine."""
+        try:
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+
+            # 1. Genera le parole da inviare
+            pad_word = self.asic_config.get_init_pad_string()
+            pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=self.inj_pixel_x.get(), y_3b=self.inj_pixel_y.get())
+
+            config_pixel_word = self.asic_config.get_config_pointed_pixel(
+                cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
+                cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
+                t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+            )
+
+            inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
+                bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
+            )
+            inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
+                bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=0
+            )
+            tot_request = self.asic_config.get_save_tot_command()
+            toa_request = self.asic_config.get_save_toa_command()
+
+            sweep_params = {
+                'start_v': self.sweep_start_v.get(), 'end_v': self.sweep_end_v.get(), 
+                'step_v': self.sweep_step_v.get(), 'num_injections': self.num_injections.get(),
+                'pixel_x': self.inj_pixel_x.get(), 'pixel_y': self.inj_pixel_y.get()
+            }
+
+            pixel_config_params = {
+                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
+                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
+                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
+                'out_en': self.config_out_en.get()
+            }
+
+            binary_command_params = {
+                'pad_word': pad_word,
+                'pointer_word': pointer_word,
+                'config_pixel_word': config_pixel_word,
+                'inj_word1_start': inj_word1_start,
+                'inj_word2_start': inj_word2_start,
+                'inj_word1_stop': inj_word1_stop,
+                'inj_word2_stop': inj_word2_stop,
+                'tot_request': tot_request,
+                'toa_request': toa_request
+            }
+
+            # Delega l'intera operazione di sweep all'Engine
+            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, pixel_config_params, binary_command_params)
             
             messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
 

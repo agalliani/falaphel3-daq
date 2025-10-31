@@ -222,44 +222,26 @@ class FpgaMeasurementEngine:
             raise Exception(f"Errore durante l'iniezione/lettura del pixel: {e}")
 
     def _inject_a_pixel(self, x: int, y: int, pixel_config_params: Dict[str, int], 
-                        inj_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
+                        binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
-        
-        # 1. Genera le parole da inviare
-        pad_word = self.asic_config.get_init_pad_string()
-        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
-        
-        config_pixel_word = self.asic_config.get_config_pointed_pixel(
-            cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
-            cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
-            t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
-        )
-        
-        inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
-            bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
-        )
-        inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
-            bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=0
-        )
-        tot_request = self.asic_config.get_save_tot_command()
-        toa_request = self.asic_config.get_save_toa_command()
+    
 
         # 2. Sequenza di comunicazione
         try:
             # Sequenza di configurazione pixel
-            self._send_spi_word(ser_int, pad_word)
-            self._send_spi_word(ser_int, pointer_word)
-            self._send_spi_word(ser_int, config_pixel_word)
+            self._send_spi_word(ser_int, binary_command_params["pad_word"])
+            self._send_spi_word(ser_int, binary_command_params["pointer_word"])
+            self._send_spi_word(ser_int, binary_command_params["config_pixel_word"])
             # Sequenza di iniezione START
-            self._send_spi_word(ser_int, inj_word2_start)
-            self._send_spi_word(ser_int, inj_word1_start)
+            self._send_spi_word(ser_int, binary_command_params["inj_word2_start"])
+            self._send_spi_word(ser_int, binary_command_params["inj_word1_start"])
             # Richiesta ToT e ToA
-            tot_response_raw = self._send_spi_word(ser_int, tot_request)
-            toa_response_raw = self._send_spi_word(ser_int, toa_request)
+            tot_response_raw = self._send_spi_word(ser_int, binary_command_params["tot_request"])
+            toa_response_raw = self._send_spi_word(ser_int, binary_command_params["toa_request"])
             # Ripristino pixel dopo iniezione STOP
-            self._send_spi_word(ser_int, inj_word2_stop)
-            self._send_spi_word(ser_int, inj_word1_stop)
-            
+            self._send_spi_word(ser_int, binary_command_params["inj_word2_stop"])
+            self._send_spi_word(ser_int, binary_command_params["inj_word1_stop"])
+
             # 3. Elabora risultati
             tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
             toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
@@ -277,7 +259,7 @@ class FpgaMeasurementEngine:
             return tot_value, toa_value
             
     def perform_sweep(self, port: str, baud: int, sweep_params: Dict[str, int], 
-                      pixel_config_params: Dict[str, int], inj_params: Dict[str, int]) -> float:
+                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int]) -> float:
         """Esegue una scansione completa variando la tensione di soglia."""
 
         all_sweep_data = []
@@ -325,7 +307,7 @@ class FpgaMeasurementEngine:
 
                     remaining = num_injections
                     while remaining > 0:
-                        tot_value, toa_value = self._inject_a_pixel_opt(pixel_x, pixel_y, pixel_config_params, inj_params, ser_int)
+                        tot_value, toa_value = self._inject_a_pixel_opt(pixel_x, pixel_y, binary_command_params, ser_int)
                         
                         # Gestione dei risultati e retry/decremento (Logica di elaborazione)
                         if math.isnan(tot_value) and math.isnan(toa_value):
