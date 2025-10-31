@@ -50,54 +50,33 @@ class ExportService(metaclass=Singleton):
     
    
     
-    def create_falaphel_file(self):
+    def create_falaphel_file(self, config):
         """
-        Crea il file TSV richiesto con suffissi dinamici basati sulle configurazioni attive.
+        config: dict con le configurazioni (interi)
         """
-
-        # Ottieni valori dalle Tkinter IntVar
-        cfg = {
-            "cap50": self.config_cap50.get(),
-            "cap25": self.config_cap25.get(),
-            "cap_csa_load": self.config_cap_csa_load.get(),
-            "dac_th": self.config_dac_th.get(),
-            "test_en": self.config_test_en.get(),
-            "t_up": self.config_t_up.get()
-        }
-
-        # Costruisci suffissi dinamici
         suffix_parts = []
-
-        # campi booleani
+        # boolean flags
         for key in ["cap50", "cap25", "cap_csa_load", "test_en", "t_up"]:
-            if cfg[key] != 0:
+            if config.get(key, 0) != 0:
                 suffix_parts.append(f"_{key}")
-
-        # campo multi-bit
-        if cfg["dac_th"] != 0:
-            suffix_parts.append(f"_dacth_{cfg['dac_th']}")
-
+        # multi-bit
+        dac_th = config.get("dac_th", 0)
+        if dac_th != 0:
+            suffix_parts.append(f"_dacth_{dac_th}")
         suffix_string = "".join(suffix_parts)
-
-        # Timestamp
         timestamp = time.strftime("%y%m%d_%H%M%S")
-
         file_name = f"data_falaphel_prin_{timestamp}{suffix_string}.tsv"
         target_path = self.directory / file_name
         self.falaphelPath = target_path
-
         try:
             with open(self.falaphelPath, "w") as file:
                 file.write(self.FALAPHEL_HEADER)
-            print(f"File '{file_name}' creato con successo in: {self.directory}")
-
+            print(f"File '{file_name}' creato in: {self.directory}")
         except Exception as e:
-            print(f"Errore nella creazione del file: {e}")
+            print(f"Errore: {e}")
             self.falaphelPath = None
             raise
-
-
-        
+       
     def write_falaphel_data_row(self, voltage: float, tot_avg: float, tot_std: float, toa_avg: float, toa_std: float, efficiency_tot: float, efficiency_toa: float):
         """
         Scrive una riga di dati nel file 'data_falaphel_prin_{{...}}.tsv'.
