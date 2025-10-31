@@ -4,7 +4,7 @@ from tkinter import messagebox, ttk
 from typing import Tuple
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
-#from power_supply_controller import PowerSupplyService
+from power_supply_controller import PowerSupplyService
 from export_service import ExportService
 import time
 import signal
@@ -27,7 +27,7 @@ class FpgaControlApp:
         self.asic_config = AsicConfigurator()
         self.spi_initialized = False # Flag per l'inizializzazione SPI
 
-        #self.ps_service = PowerSupplyService()
+        self.ps_service = PowerSupplyService()
         self.exporter = ExportService()
         
         # Le variabili self.tot_response e self.toa_response sono state RIMOVE 
@@ -49,7 +49,7 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
         
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=55)   # Tensione di partenza in mV
+        self.sweep_start_v = tk.IntVar(value=50)   # Tensione di partenza in mV
         self.sweep_end_v = tk.IntVar(value=30)     # Tensione di fine in mV
         self.sweep_step_v = tk.IntVar(value=1)      # Step di tensione in mV
         self.num_injections = tk.IntVar(value=100)    # Numero di iniezioni per step
@@ -201,6 +201,7 @@ class FpgaControlApp:
 
     def inject_single_pixel_4button(self):
         """Wrapper per chiamare _inject_a_pixel da bottone GUI."""
+
         try:
             tot_value, toa_value = self._inject_a_pixel(x=0, y=0)
             print("")
@@ -328,7 +329,7 @@ class FpgaControlApp:
                 self.ps_service.output_on(channel=1)
 
                 # Attendi un breve periodo per la stabilizzazione
-                time.sleep(0.09)
+                #time.sleep(0.09)
 
                 # Esegue N iniezioni per la tensione corrente
    
