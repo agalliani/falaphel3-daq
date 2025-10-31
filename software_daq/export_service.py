@@ -48,32 +48,54 @@ class ExportService(metaclass=Singleton):
         return str(self.directory)
     
     
-    # --------------------------------------------------------------------------
-    ## NUOVI METODI PER L'EXPORT SEMPLICE
-    # --------------------------------------------------------------------------
+   
     
     def create_falaphel_file(self):
         """
-        Crea il file TSV richiesto con il nome e l'intestazione specificati.
+        Crea il file TSV richiesto con suffissi dinamici basati sulle configurazioni attive.
         """
-        # Formato data e ora richiesto: AA-MM-GG_HHMMSS (o simile a seconda di cosa intendi per {data}_{ora})
-        # Usiamo: GGMMAA_HHMMSS
+
+        # Ottieni valori dalle Tkinter IntVar
+        cfg = {
+            "cap50": self.config_cap50.get(),
+            "cap25": self.config_cap25.get(),
+            "cap_csa_load": self.config_cap_csa_load.get(),
+            "dac_th": self.config_dac_th.get(),
+            "test_en": self.config_test_en.get(),
+            "t_up": self.config_t_up.get()
+        }
+
+        # Costruisci suffissi dinamici
+        suffix_parts = []
+
+        # campi booleani
+        for key in ["cap50", "cap25", "cap_csa_load", "test_en", "t_up"]:
+            if cfg[key] != 0:
+                suffix_parts.append(f"_{key}")
+
+        # campo multi-bit
+        if cfg["dac_th"] != 0:
+            suffix_parts.append(f"_dacth_{cfg['dac_th']}")
+
+        suffix_string = "".join(suffix_parts)
+
+        # Timestamp
         timestamp = time.strftime("%y%m%d_%H%M%S")
-        
-        file_name = f"data_falaphel_prin_{timestamp}.tsv"
+
+        file_name = f"data_falaphel_prin_{timestamp}{suffix_string}.tsv"
         target_path = self.directory / file_name
-        self.falaphelPath = target_path # Salva il percorso per le scritture successive
+        self.falaphelPath = target_path
 
         try:
-            # Scrive l'intestazione al file
             with open(self.falaphelPath, "w") as file:
                 file.write(self.FALAPHEL_HEADER)
             print(f"File '{file_name}' creato con successo in: {self.directory}")
-            
+
         except Exception as e:
             print(f"Errore nella creazione del file: {e}")
             self.falaphelPath = None
             raise
+
 
         
     def write_falaphel_data_row(self, voltage: float, tot_avg: float, tot_std: float, toa_avg: float, toa_std: float, efficiency_tot: float, efficiency_toa: float):
