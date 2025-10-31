@@ -45,7 +45,7 @@ class FpgaMeasurementEngine:
     def _get_serial_interface(self, port: str, baud: int) -> SerialInterface:
         """Helper per ottenere un'istanza di SerialInterface con i dati passati."""
         try:
-            return self.serial_interface_factory(port, baud, use_serial=USE_SERIAL)
+            return self.serial_interface_factory(port, baud, use_serial=True)
         except ValueError as e:
             raise ValueError(f"Baudrate non valido: {e}")
 
@@ -291,11 +291,14 @@ class FpgaMeasurementEngine:
                     # Calcola l'efficienza
                     num_hits_tot = sum(1 for tot in tot_results if tot > 0)
                     efficiency_tot = num_hits_tot / num_injections if num_injections > 0 else 0.0
+
+                    num_hits_toa = sum(1 for toa in toa_results if toa > 0)
+                    efficiency_toa = num_hits_toa / num_injections if num_injections > 0 else 0.0
                     
                     # 5. Scrittura della riga sul file
                     self.exporter.write_falaphel_data_row(
-                        voltage=voltage, tot_avg=avg_tot, tot_std=std_tot, toa_avg=avg_toa, 
-                        toa_std=std_toa, efficiency_tot=efficiency_tot
+                        voltage=voltage, tot_avg=avg_tot, tot_std=std_tot, toa_avg=avg_toa,
+                        toa_std=std_toa, efficiency_tot=efficiency_tot, efficiency_toa=efficiency_toa
                     )
 
                     print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")

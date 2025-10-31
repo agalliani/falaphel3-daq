@@ -12,7 +12,7 @@ import signal
 # ============================================================================== 
 USE_SERIAL = True # True per usare la porta reale, False per emulare
 
-if not USE_SERIAL:
+if USE_SERIAL:
     # Assicurati che PowerSupplyService sia importato solo se necessario per evitare errori di import
     from power_supply_controller import PowerSupplyService 
     PowerSupplyService = PowerSupplyService # Riassegna per l'uso nella classe Logica
@@ -30,7 +30,7 @@ class FpgaControlApp:
         self.exporter = ExportService()
         
         # Power Supply Service (solo se non si usa l'emulazione)
-        ps_service = PowerSupplyService() if not USE_SERIAL else None
+        ps_service = PowerSupplyService() if USE_SERIAL else None
         
         # FUNZIONE FACTORY per creare l'interfaccia seriale
         def serial_interface_factory(port: str, baud: int, use_serial: bool):
@@ -258,7 +258,7 @@ class FpgaControlApp:
 def signal_handler(sig, frame):
     # La gestione del segnale deve spegnere il power supply
     # Questo richiede che il PowerSupplyService sia disponibile in questo contesto.
-    if not USE_SERIAL:
+    if USE_SERIAL:
         try:
             psService = PowerSupplyService()
             psService.output_off(channel=1)
@@ -274,8 +274,8 @@ signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
     # Assicurati che l'import di PowerSupplyService sia gestito
-    if not USE_SERIAL and 'PowerSupplyService' not in locals():
-         print("FATAL: Per USE_SERIAL=False, assicurarsi che power_supply_controller sia importabile.")
+    if USE_SERIAL and 'PowerSupplyService' not in locals():
+         print("FATAL: Per USE_SERIAL=True, assicurarsi che power_supply_controller sia importabile.")
          sys.exit(1)
          
     root = tk.Tk()
