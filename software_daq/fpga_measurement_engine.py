@@ -153,8 +153,7 @@ class FpgaMeasurementEngine:
 
     # --- INIEZIONE E SWEEP ---
 
-    def _inject_a_pixel_opt(self, x: int, y: int, pixel_config_params: Dict[str, int], 
-                        inj_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
+    def _inject_a_pixel_opt(self, x: int, y: int, pixel_config_params: Dict[str, int], inj_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel. La configurazione viene eseguita solo se il pixel è cambiato."""
         
         current_pixel = (x, y)
@@ -174,7 +173,7 @@ class FpgaMeasurementEngine:
                 t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
             )
             
-                # Generazione delle parole di iniezione (queste vengono sempre rigenerate)
+            # Generazione delle parole di iniezione (queste vengono sempre rigenerate)
             inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
              bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
             )

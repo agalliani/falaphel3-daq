@@ -198,16 +198,16 @@ class FpgaControlApp:
             pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=self.inj_pixel_x.get(), y_3b=self.inj_pixel_y.get())
 
             config_pixel_word = self.asic_config.get_config_pointed_pixel(
-                cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
-                cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
-                t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+                cap25_1b=self.config_cap25.get(), dac_th_5b=self.config_dac_th.get(), test_en_1b=self.config_test_en.get(), 
+                cap50_1b=self.config_cap50.get(), cap_csa_load_1b=self.config_cap_csa_load.get(), 
+                t_up_1b=self.config_t_up.get(), out_en_1b=self.config_out_en.get()
             )
 
             inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
-                bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
+                bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(), burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
             )
             inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
-                bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=0
+                bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(), burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=0
             )
             tot_request = self.asic_config.get_save_tot_command()
             toa_request = self.asic_config.get_save_toa_command()
@@ -314,7 +314,7 @@ class FpgaControlApp:
         tk.Label(frame_inj, text="# Injections per Step:").grid(row=8, column=0, padx=5, sticky="w")
         tk.Spinbox(frame_inj, textvariable=self.num_injections, from_=1, to=10000, width=10).grid(row=8, column=1, padx=5, sticky="ew")
 
-        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection, bg="light green").grid(row=9, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection_opt, bg="light green").grid(row=9, column=0, columnspan=4, pady=10)
 
 # ============================================================================== 
 # MAIN
