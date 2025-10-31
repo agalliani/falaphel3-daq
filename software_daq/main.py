@@ -238,7 +238,7 @@ class FpgaControlApp:
             }
 
             # Delega l'intera operazione di sweep all'Engine
-            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, pixel_config_params, binary_command_params)
+            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, binary_command_params, pixel_config_params)
             
             messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
 

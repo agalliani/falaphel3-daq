@@ -220,8 +220,7 @@ class FpgaMeasurementEngine:
         except Exception as e:
             raise Exception(f"Errore durante l'iniezione/lettura del pixel: {e}")
 
-    def _inject_a_pixel(self, x: int, y: int, pixel_config_params: Dict[str, int], 
-                        binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
+    def _inject_a_pixel(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
     
 
@@ -357,9 +356,7 @@ class FpgaMeasurementEngine:
                     all_sweep_data.append(data_row)
                     print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")
 
-                    # 5. Scrittura della riga sul file
   
-                    print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")
             # 6. SCRITTURA FINALE in BLOCCO
             self.exporter.write_falaphel_data_bulk(all_sweep_data)
             end_time = time.time()
