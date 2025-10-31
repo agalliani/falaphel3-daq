@@ -258,7 +258,7 @@ class FpgaMeasurementEngine:
             return tot_value, toa_value
             
     def perform_sweep(self, port: str, baud: int, sweep_params: Dict[str, int], 
-                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int], ser_int: SerialInterface) -> float:
+                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int]) -> float:
         """Esegue una scansione completa variando la tensione di soglia."""
 
         all_sweep_data = []
