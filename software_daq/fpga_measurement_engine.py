@@ -150,6 +150,73 @@ class FpgaMeasurementEngine:
 
     # --- INIEZIONE E SWEEP ---
 
+    def _inject_a_pixel_opt(self, x: int, y: int, pixel_config_params: Dict[str, int], 
+                        inj_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
+        """Esegue l'iniezione su un singolo pixel. La configurazione viene eseguita solo se il pixel è cambiato."""
+        
+        current_pixel = (x, y)
+        
+        # 1. Genera le parole da inviare
+        
+        # *****************************************************************
+        # ⚠️ Verifica della configurazione: la eseguo solo se il pixel è nuovo
+        # *****************************************************************
+        if current_pixel != self._last_configured_pixel:
+            # Generazione delle parole di configurazione (se necessario)
+            pad_word = self.asic_config.get_init_pad_string()
+            pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
+            config_pixel_word = self.asic_config.get_config_pointed_pixel(
+                cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
+                cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
+                t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+            )
+            
+            # Sequenza di configurazione pixel
+            try:
+                # Eseguo l'invio solo se devo riconfigurare
+                self._send_spi_word(ser_int, pad_word)
+                self._send_spi_word(ser_int, pointer_word)
+                self._send_spi_word(ser_int, config_pixel_word)
+                
+                # Aggiorna lo stato: questo pixel è ora configurato
+                self._last_configured_pixel = current_pixel
+                
+            except Exception as e:
+                raise Exception(f"Errore durante la configurazione iniziale del pixel ({x},{y}): {e}")
+
+        # Se il pixel non è cambiato, le parole di configurazione *non* vengono generate e inviate.
+        # Il pad e il pixel rimangono configurati dall'ultima esecuzione.
+        
+        # Generazione delle parole di iniezione (queste vengono sempre rigenerate)
+        inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
+            bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
+        )
+        inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
+            bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=0
+        )
+        tot_request = self.asic_config.get_save_tot_command()
+        toa_request = self.asic_config.get_save_toa_command()
+
+        # 2. Sequenza di comunicazione - Solo Iniezione e Lettura
+        try:
+            # Sequenza di iniezione START
+            self._send_spi_word(ser_int, inj_word2_start)
+            self._send_spi_word(ser_int, inj_word1_start)
+            # Richiesta ToT e ToA
+            tot_response_raw = self._send_spi_word(ser_int, tot_request)
+            toa_response_raw = self._send_spi_word(ser_int, toa_request)
+            # Ripristino pixel dopo iniezione STOP
+            self._send_spi_word(ser_int, inj_word2_stop)
+            self._send_spi_word(ser_int, inj_word1_stop)
+            
+            # 3. Elabora risultati
+            tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
+            toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
+            
+            return tot_value, toa_value
+        except Exception as e:
+            raise Exception(f"Errore durante l'iniezione/lettura del pixel: {e}")
+
     def _inject_a_pixel(self, x: int, y: int, pixel_config_params: Dict[str, int], 
                         inj_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
@@ -252,7 +319,7 @@ class FpgaMeasurementEngine:
 
                     remaining = num_injections
                     while remaining > 0:
-                        tot_value, toa_value = self._inject_a_pixel(pixel_x, pixel_y, pixel_config_params, inj_params, ser_int)
+                        tot_value, toa_value = self._inject_a_pixel_opt(pixel_x, pixel_y, pixel_config_params, inj_params, ser_int)
                         
                         # Gestione dei risultati e retry/decremento (Logica di elaborazione)
                         if math.isnan(tot_value) and math.isnan(toa_value):
