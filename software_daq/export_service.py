@@ -1,6 +1,7 @@
 import os
 import time
 from pathlib import Path
+from typing import List, Dict, Any
 
 
 class Singleton(type):
@@ -98,3 +99,46 @@ class ExportService(metaclass=Singleton):
         except Exception as e:
             print(f"Errore nella scrittura del file 'falaphel': {e}")
             
+    
+    def write_falaphel_data_bulk(self, data_rows: List[Dict[str, Any]]):
+        """
+        Scrive tutte le righe di dati fornite sul file 'data_falaphel_prin_{...}.tsv' 
+        in un'unica operazione per ottimizzare l'I/O su disco.
+        
+        Args:
+            data_rows: Lista di dizionari, dove ogni dizionario contiene
+                       i dati di una riga (voltage, tot_avg, ecc.).
+        """
+        if not self.falaphelPath or not self.falaphelPath.exists():
+            print("Errore: Il file 'falaphel' non è stato creato. Chiama prima create_falaphel_file().")
+            return 
+        
+        # 1. Costruisci un'unica stringa contenente tutte le righe
+        full_content = ""
+        try:
+            for row_data in data_rows:
+                # Recupera i dati dal dizionario
+                voltage = row_data['voltage']
+                tot_avg = row_data['tot_avg']
+                tot_std = row_data['tot_std']
+                toa_avg = row_data['toa_avg']
+                toa_std = row_data['toa_std']
+                efficiency_tot = row_data['efficiency_tot']
+                efficiency_toa = row_data['efficiency_toa']
+                
+                # Formatta la riga (come nel tuo metodo originale)
+                row = (
+                    f"{round(voltage, 3)}\t{round(tot_avg, 3)}\t{round(tot_std, 3)}\t"
+                    f"{round(toa_avg, 3)}\t{round(toa_std, 3)}\t{round(efficiency_tot, 3)}\t{round(efficiency_toa, 3)}\n"
+                )
+                full_content += row
+            
+            # 2. Operazione di I/O UNICA
+            with open(self.falaphelPath, "a") as file:
+                # Scrivi tutto il contenuto in blocco
+                file.write(full_content)
+                
+            print(f"Scritte {len(data_rows)} righe di dati in blocco su {self.falaphelPath.name}")
+
+        except Exception as e:
+            print(f"Errore nella scrittura BULK del file 'falaphel': {e}")

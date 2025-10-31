@@ -174,12 +174,18 @@ class FpgaMeasurementEngine:
                 t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
             )
             
+                # Generazione delle parole di iniezione (queste vengono sempre rigenerate)
+            inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
+             bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
+            )
+
             # Sequenza di configurazione pixel
             try:
                 # Eseguo l'invio solo se devo riconfigurare
                 self._send_spi_word(ser_int, pad_word)
                 self._send_spi_word(ser_int, pointer_word)
                 self._send_spi_word(ser_int, config_pixel_word)
+                self._send_spi_word(ser_int, inj_word2_start)
                 
                 # Aggiorna lo stato: questo pixel è ora configurato
                 self._last_configured_pixel = current_pixel
@@ -190,10 +196,7 @@ class FpgaMeasurementEngine:
         # Se il pixel non è cambiato, le parole di configurazione *non* vengono generate e inviate.
         # Il pad e il pixel rimangono configurati dall'ultima esecuzione.
         
-        # Generazione delle parole di iniezione (queste vengono sempre rigenerate)
-        inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
-            bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
-        )
+    
         inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
             bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=0
         )
@@ -203,13 +206,11 @@ class FpgaMeasurementEngine:
         # 2. Sequenza di comunicazione - Solo Iniezione e Lettura
         try:
             # Sequenza di iniezione START
-            self._send_spi_word(ser_int, inj_word2_start)
             self._send_spi_word(ser_int, inj_word1_start)
             # Richiesta ToT e ToA
             tot_response_raw = self._send_spi_word(ser_int, tot_request)
             toa_response_raw = self._send_spi_word(ser_int, toa_request)
             # Ripristino pixel dopo iniezione STOP
-            self._send_spi_word(ser_int, inj_word2_stop)
             self._send_spi_word(ser_int, inj_word1_stop)
             
             # 3. Elabora risultati
@@ -278,6 +279,8 @@ class FpgaMeasurementEngine:
     def perform_sweep(self, port: str, baud: int, sweep_params: Dict[str, int], 
                       pixel_config_params: Dict[str, int], inj_params: Dict[str, int]) -> float:
         """Esegue una scansione completa variando la tensione di soglia."""
+
+        all_sweep_data = []
         
         if not self.ps_service:
             raise RuntimeError("Impossibile eseguire lo sweep: Power Supply Service non disponibile (USE_SERIAL=True?).")
@@ -364,15 +367,20 @@ class FpgaMeasurementEngine:
 
                     num_hits_toa = sum(1 for toa in toa_results if toa > 0)
                     efficiency_toa = num_hits_toa / num_injections if num_injections > 0 else 0.0
-                    
-                    # 5. Scrittura della riga sul file
-                    self.exporter.write_falaphel_data_row(
-                        voltage=voltage, tot_avg=avg_tot, tot_std=std_tot, toa_avg=avg_toa,
-                        toa_std=std_toa, efficiency_tot=efficiency_tot, efficiency_toa=efficiency_toa
-                    )
 
+                    data_row = {
+                        'voltage': voltage, 'tot_avg': avg_tot, 'tot_std': std_tot,
+                        'toa_avg': avg_toa, 'toa_std': std_toa, 'efficiency_tot': efficiency_tot,
+                        'efficiency_toa': efficiency_toa
+                    }
+                    all_sweep_data.append(data_row)
                     print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")
 
+                    # 5. Scrittura della riga sul file
+  
+                    print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")
+            # 6. SCRITTURA FINALE in BLOCCO
+            self.exporter.write_falaphel_data_bulk(all_sweep_data)
             end_time = time.time()
             elapsed_time = end_time - start_time
             print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
