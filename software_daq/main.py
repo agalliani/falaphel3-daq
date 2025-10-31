@@ -1,19 +1,21 @@
 import sys
 import tkinter as tk
 from tkinter import messagebox, ttk
-from typing import Tuple, Optional
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface 
 from export_service import ExportService
-import time
+from fpga_measurement_engine import FpgaMeasurementEngine
 import signal
-import math
-import statistics
 
+# ============================================================================== 
+# CONFIGURAZIONE GLOBALE (Mantienila in alto per una facile modifica)
+# ============================================================================== 
 USE_SERIAL = True # True per usare la porta reale, False per emulare
 
 if not USE_SERIAL:
-    from power_supply_controller import PowerSupplyService
+    # Assicurati che PowerSupplyService sia importato solo se necessario per evitare errori di import
+    from power_supply_controller import PowerSupplyService 
+    PowerSupplyService = PowerSupplyService # Riassegna per l'uso nella classe Logica
 
 # ============================================================================== 
 # CLASSE PRINCIPALE DELL'APPLICAZIONE (GUI)
@@ -21,17 +23,29 @@ if not USE_SERIAL:
 class FpgaControlApp:
     def __init__(self, master):
         self.master = master
-        master.title("UART Read/Write Tool")
+        master.title("FPGA Control GUI (Refactored)")
 
-        # 1. ATTRIBUTI DI STATO
+        # 1. INIZIALIZZAZIONE DELLE DIPENDENZE ESTERNE
         self.asic_config = AsicConfigurator()
-        self.spi_initialized = False # Flag per l'inizializzazione SPI
-
-        if not USE_SERIAL:
-            self.ps_service = PowerSupplyService()
         self.exporter = ExportService()
+        
+        # Power Supply Service (solo se non si usa l'emulazione)
+        ps_service = PowerSupplyService() if not USE_SERIAL else None
+        
+        # FUNZIONE FACTORY per creare l'interfaccia seriale
+        def serial_interface_factory(port: str, baud: int, use_serial: bool):
+             # Il costruttore SerialInterface deve essere in grado di gestire l'emulazione
+            return SerialInterface(port, baud, use_serial=use_serial)
 
-        # 2. VARIABILI DI CONTROLLO TKINTER
+        # 2. INIEZIONE DELLE DIPENDENZE NELL'ENGINE
+        self.engine = FpgaMeasurementEngine(
+            serial_interface_factory=serial_interface_factory,
+            asic_config=self.asic_config,
+            exporter=self.exporter,
+            ps_service=ps_service
+        )
+
+        # 3. VARIABILI DI CONTROLLO TKINTER
         self.result_var = tk.StringVar()
         self.port_entry = tk.StringVar(value="COM3")
         self.baud_entry = tk.StringVar(value="115200")
@@ -49,363 +63,133 @@ class FpgaControlApp:
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
         self.sweep_start_v = tk.IntVar(value=50)   # Tensione di partenza in mV
         self.sweep_end_v = tk.IntVar(value=30)     # Tensione di fine in mV
-        self.sweep_step_v = tk.IntVar(value=1)      # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=100)    # Numero di iniezioni per step
+        self.sweep_step_v = tk.IntVar(value=1)     # Step di tensione in mV
+        self.num_injections = tk.IntVar(value=100) # Numero di iniezioni per step
 
-        # Variabili per l'iniezione su singolo pixel (dalla richiesta precedente)
-        self.inj_pixel_x = tk.IntVar(value=0) # Pixel X coordinate (0-31)
-        self.inj_pixel_y = tk.IntVar(value=0) # Pixel Y coordinate (0-7)
+        # Variabili per l'iniezione su singolo pixel
+        self.inj_pixel_x = tk.IntVar(value=0)
+        self.inj_pixel_y = tk.IntVar(value=0)
 
         # VARIABILI PER LA CONFIGURAZIONE DEL PIXEL
-        self.config_cap50 = tk.IntVar(value=1) # Bit cap50 (1b)
-        self.config_cap25 = tk.IntVar(value=0) # Bit cap25 (1b) - Mantenuto 1 come nel codice esistente
-        self.config_cap_csa_load = tk.IntVar(value=0) # Bit cap_csa_load (1b)
-        self.config_dac_th = tk.IntVar(value=0) # Bit dac_th (5b) - Aggiunto come input
-        self.config_test_en = tk.IntVar(value=1) # Bit test_en (1b) - Mantenuto 1
-        self.config_t_up = tk.IntVar(value=0) # Bit t_up (1b)
-        self.config_out_en = tk.IntVar(value=1) # Bit out_en (1b) - Mantenuto 1
+        self.config_cap50 = tk.IntVar(value=1)
+        self.config_cap25 = tk.IntVar(value=0)
+        self.config_cap_csa_load = tk.IntVar(value=0)
+        self.config_dac_th = tk.IntVar(value=0)
+        self.config_test_en = tk.IntVar(value=1)
+        self.config_t_up = tk.IntVar(value=0)
+        self.config_out_en = tk.IntVar(value=1)
 
-        # 3. CREAZIONE DELL'INTERFACCIA UTENTE
+        # 4. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
-        # Injection delay in seconds (can be set to 0.0 if not required for hardware timing)
-        self.injection_delay = 0.001
 
-    # --- METODI DI CONNESSIONE E COMUNICAZIONE ---
-    def _get_serial_interface(self) -> SerialInterface:
-        """Helper per ottenere un'istanza di SerialInterface con i dati GUI."""
-        try:
-            port = self.port_entry.get()
-            baud = int(self.baud_entry.get())
-            return SerialInterface(port, baud, use_serial=USE_SERIAL)
-        except ValueError:
-            raise ValueError("Baudrate must be an integer.")
-
-    def _send_write(self):
+    # --- METODI DELLA GUI (Delegazione all'Engine) ---
+    
+    def _send_write_gui(self):
+        """Prende i dati dalla GUI e chiama l'Engine."""
         try:
             addr = int(self.write_addr_entry.get(), 16)
             data = int(self.write_data_entry.get(), 16)
-            with self._get_serial_interface() as ser_int:
-                response = ser_int.write_register(addr, data)
-                self.result_var.set(" ".join(f"{b:02X}" for b in response))
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+            
+            response = self.engine.send_write_command(port, baud, addr, data)
+            self.result_var.set(response)
         except Exception as e:
             messagebox.showerror("Error", f"Write command error: {e}")
 
-    def _send_read(self):
+    def _send_read_gui(self):
+        """Prende i dati dalla GUI e chiama l'Engine."""
         try:
             addr = int(self.read_addr_entry.get(), 16)
-            with self._get_serial_interface() as ser_int:
-                response = ser_int.read_register(addr)
-                self.result_var.set(" ".join(f"{b:02X}" for b in response))
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+            
+            response = self.engine.send_read_command(port, baud, addr)
+            self.result_var.set(response)
         except Exception as e:
             messagebox.showerror("Error", f"Read command error: {e}")
-
-    # --- METODI DI LAVORO CON POWER SUPPLY ---
-    def _connect_power_supply(self, channel: int = 1):
-        """Connette al Power Supply usando PowerSupplyService."""
-        try:
-            self.ps_service.connect(resource_index=0)
-            self.ps_service.set_channel_current(channel, 0.1)
-            print("Success", "Connected to Power Supply successfully.")
-        except Exception as e:
-            messagebox.showerror("Error", f"Connection error: {e}")
-
-    # --- METODI DI CONFIGURAZIONE FPGA ---
-    def _send_spi_word(self, ser_int: SerialInterface, word_value: int):
-        """Funzione helper per inviare una singola parola di configurazione SPI usando SerialInterface."""
-        # L'inizializzazione SPI avviene solo al primo accesso (gestita dal flag)
-        if not self.spi_initialized:
-            print("First access to SPI, performing initialization")
-            # 1) SPI Init: Write 0x8 to 0x30014
-            ser_int.write_register(0x30014, 0xF)
-            # 2) SPI Init: Write 0x1 to 0x30018
-            ser_int.write_register(0x30018, 0x1)
-            self.spi_initialized = True
-            print("SPI initialization complete")
-
-        # 3) SPI CTRL Clear: Write 0x2214 to 0x30010
-        ser_int.write_register(0x30010, 0x2214) 
-        # 4) SPI Data: Write config_value to 0x30000
-        ser_int.write_register(0x30000, word_value) 
-        # 5) SPI CTRL Set: Write 0x2314 to 0x30010
-        ser_int.write_register(0x30010, 0x2314) 
-        # 7) SPI Read: Read from 0x30000 (per verifica/risposta)
-        response = ser_int.read_register(0x30000)
-        return response
-
+            
     def _send_configuration(self):
-        """Invia una configurazione a 20 bit all'FPGA."""
+        """Invia una configurazione a 20 bit. Logica nell'Engine."""
         try:
             config_str = self.config_entry.get().strip()
-            if len(config_str) != 20 or any(c not in '01' for c in config_str):
-                messagebox.showerror("Error", "Configuration must be a 20-bit binary string")
-                return
-
-            config_value = int(config_str, 2)
-
-            with self._get_serial_interface() as ser_int:
-                # Logica di SPI Init, Clear, Data, Set
-                self._send_spi_word(ser_int, config_value)
-                print(f"Configuration sent: {config_str}")
-                # Leggi la risposta finale per l'UI
-                response = ser_int.read_register(0x30000)
-                self.result_var.set(" ".join(f"{b:02X}" for b in response))
-
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+            
+            response = self.engine.send_full_configuration(port, baud, config_str)
+            self.result_var.set(response)
+            messagebox.showinfo("Success", f"Configuration sent: {config_str}")
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Configuration value error: {e}")
         except Exception as e:
             messagebox.showerror("Error", f"Configuration error: {e}")
 
-    def _send_injection_settings(self):
-        """Genera e invia le due parole di configurazione per l'iniezione."""
-        try:
-            # 1. Genera le parole di configurazione usando AsicConfigurator
-            word1, word2 = self.asic_config.get_injection_settings(
-                bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
-                burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get()
-            )
-
-            with self._get_serial_interface() as ser_int:
-                # 2. Invia la prima parola (SPI WRITE INJ1)
-                self._send_spi_word(ser_int, word1)
-                # 3. Invia la seconda parola (SPI WRITE INJ2)
-                self._send_spi_word(ser_int, word2)
-
-        except ValueError as e:
-            messagebox.showerror("Error", f"Injection value error: {e}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Communication error: {e}")
-
     def inject_single_pixel_4button(self):
-        """Wrapper per chiamare _inject_a_pixel da bottone GUI."""
+        """Prepara i parametri e chiama l'iniezione sull'Engine."""
         try:
-            tot_value, toa_value = self._inject_a_pixel(x=0, y=0)
-            print("")
-            print(f"ToT={tot_value}\t ToA={toa_value}")
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+            
+            pixel_config_params = {
+                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
+                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
+                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
+                'out_en': self.config_out_en.get()
+            }
+            inj_params = {
+                'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
+                'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
+            }
+            
+            # Delega all'Engine (l'Engine chiamerà _inject_a_pixel con apertura/chiusura locale)
+            tot_value, toa_value = self.engine.inject_single_pixel(
+                port, baud, self.inj_pixel_x.get(), self.inj_pixel_y.get(), 
+                pixel_config_params, inj_params
+            )
+            messagebox.showinfo("Injection Result", f"Pixel ({self.inj_pixel_x.get()},{self.inj_pixel_y.get()}) injected.\nToT={tot_value:.2f}, ToA={toa_value:.2f}")
+
         except Exception as e:
             messagebox.showerror("Error", f"Pixel injection error: {e}")
 
-    # --- INIEZIONE PIXEL ---
-    def _inject_a_pixel(self, x: int=0, y: int=0, ser_int: Optional[SerialInterface]=None) -> Tuple[float, float]:
-        """Genera e invia le impostazioni di configurazione e iniezione per il pixel (x,y).
-           Se viene passato 'ser_int', lo riutilizza; altrimenti apre/chiude la seriale localmente.
-           Ritorna: Tuple[float, float]: I valori elaborati di (ToT, ToA).
-        """
-        # Genera le parole da inviare
-        pad_word = self.asic_config.get_init_pad_string()
-        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x,y_3b=y)
-        # usa i valori correnti di GUI per configurazione pixel (se vuoi cambiare mappa, aggiorna i param)
-        config_pixel_word = self.asic_config.get_config_pointed_pixel(
-            cap25_1b=self.config_cap25.get(), dac_th_5b=self.config_dac_th.get(), test_en_1b=self.config_test_en.get(), cap50_1b=self.config_cap50.get(),
-            cap_csa_load_1b=self.config_cap_csa_load.get(), t_up_1b=self.config_t_up.get(), out_en_1b=self.config_out_en.get()
-        )
-        inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
-            bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
-            burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
-        )
-        inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
-            bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(),
-            burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=0
-        )
-        tot_request = self.asic_config.get_save_tot_command()
-        toa_request = self.asic_config.get_save_toa_command()
-
-        # Se mi viene passato ser_int, lo uso direttamente (non apro/chiudo)
-        if ser_int is not None:
-            try:
-                # Sequenza di configurazione
-                self._send_spi_word(ser_int, pad_word)
-                self._send_spi_word(ser_int, pointer_word)
-                self._send_spi_word(ser_int, config_pixel_word)
-                # Sequenza di iniezione
-                self._send_spi_word(ser_int, inj_word2_start)
-                self._send_spi_word(ser_int, inj_word1_start)
-                # Richiesta ToT e ToA
-                tot_response_raw = self._send_spi_word(ser_int, tot_request)
-                toa_response_raw = self._send_spi_word(ser_int, toa_request)
-                # Elabora risultati
-                tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
-                toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
-                # Ripristino pixel dopo iniezione
-                self._send_spi_word(ser_int, inj_word2_stop)
-                self._send_spi_word(ser_int, inj_word1_stop)
-                return tot_value, toa_value
-            except Exception as e:
-                raise Exception(f"Error during pixel injection configuration/readout (reused ser): {e}")
-
-        # Altrimenti apro/chiudo localmente (compatibilità retro)
-        try:
-            with self._get_serial_interface() as ser:
-                # Sequenza di configurazione
-                self._send_spi_word(ser, pad_word)
-                self._send_spi_word(ser, pointer_word)
-                self._send_spi_word(ser, config_pixel_word)
-                # Sequenza di iniezione
-                self._send_spi_word(ser, inj_word2_start)
-                self._send_spi_word(ser, inj_word1_start)
-                # Richiesta ToT e ToA
-                tot_response_raw = self._send_spi_word(ser, tot_request)
-                toa_response_raw = self._send_spi_word(ser, toa_request)
-                # Elabora risultati
-                tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
-                toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
-                # Ripristino pixel dopo iniezione
-                self._send_spi_word(ser, inj_word2_stop)
-                self._send_spi_word(ser, inj_word1_stop)
-                return tot_value, toa_value
-        except Exception as e:
-            raise Exception(f"Error during pixel injection configuration/readout: {e}")
-
     def _sweep_pixel_injection(self):
-        """Esegue una scansione delle iniezioni su un pixel specifico variando la tensione di soglia,
-           usando i valori della GUI. Calcola le statistiche e salva su file."""
+        """Prepara i parametri dello sweep e delega all'Engine."""
         try:
-            # 0. Inizializzazione file di esportazione
-            config = {
-                "cap50": self.config_cap50.get(),
-                "cap25": self.config_cap25.get(),
-                "cap_csa_load": self.config_cap_csa_load.get(),
-                "dac_th": self.config_dac_th.get(),
-                "t_up": self.config_t_up.get()
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+            
+            sweep_params = {
+                'start_v': self.sweep_start_v.get(), 'end_v': self.sweep_end_v.get(), 
+                'step_v': self.sweep_step_v.get(), 'num_injections': self.num_injections.get(),
+                'pixel_x': self.inj_pixel_x.get(), 'pixel_y': self.inj_pixel_y.get()
             }
-            self.exporter.create_falaphel_file(config)
+            pixel_config_params = {
+                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
+                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
+                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
+                'out_en': self.config_out_en.get()
+            }
+            inj_params = {
+                'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
+                'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
+            }
 
-            # 1. Recupera i valori dalla GUI
-            start_voltage = self.sweep_start_v.get()
-            end_voltage = self.sweep_end_v.get()
-            step = self.sweep_step_v.get()
-            num_injections = self.num_injections.get()
-            pixel_x = self.inj_pixel_x.get()
-            pixel_y = self.inj_pixel_y.get()
-
-            if step <= 0:
-                raise ValueError("Lo step di tensione deve essere un numero intero positivo.")
-
-            # 2. Connessione al power supply e preparazione strumento
-            self._connect_power_supply()
-            # Canale 2 del power supply fisso a 0V 
-            self.ps_service.set_channel_voltage(channel=2, voltage=0.0)
-            self.ps_service.set_channel_current(channel=2, current=0.1)
-            self.ps_service.output_on(channel=2)
-            self.ps_service.set_channel_current(channel=1, current=0.1)
-
-            # Genera la lista di tensioni
-            sweep_step = -step if start_voltage > end_voltage else step
-            stop_value = end_voltage - 1 if start_voltage > end_voltage else end_voltage + 1
-            voltages = list(range(start_voltage, stop_value, sweep_step))
-
-            print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
-            tot_results = []
-            toa_results = []
-
-            # --- CRONOMETRAGGIO INIZIO ---
-            start_time = time.time()
-            # ---------------------------
-
-            # *** Ottimizzazione principale: apro la connessione seriale UNA SOLA VOLTA per tutto lo sweep ***
-            with self._get_serial_interface() as ser_int:
-                # dentro questo blocco riuso ser_int per tutte le iniezioni
-                for voltage in voltages:
-                    tot_results.clear()
-                    toa_results.clear()
-                    print(f"--- Setting Vth to {voltage} mV ---")
-                    self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
-                    self.ps_service.output_on(channel=1)
-
-                    remaining = num_injections
-                    while remaining > 0:
-                        tot_value, toa_value = self._inject_a_pixel(x=pixel_x, y=pixel_y, ser_int=ser_int)
-
-                        # both NaN -> canonicalize tot to 0.0 and keep toa as NaN   
-                        if math.isnan(tot_value) and math.isnan(toa_value):
-                            tot_results.append(0.0)
-                            toa_results.append(math.nan)
-                            remaining -= 1
-                            # sleep maintain if required for hardware
-                            time.sleep(getattr(self, 'injection_delay', 0.001))
-                            continue
-
-                        # ToA overflow (saturated) -> retry without decrementing remaining
-                        if not math.isnan(toa_value) and int(toa_value) == 255:
-                            # retry this injection (do not decrement remaining)
-                            # optional: add a small delay to avoid busy-loop
-                            time.sleep(0.001)
-                            continue
-
-                        # otherwise record and consume one attempt
-                        tot_results.append(tot_value)
-                        toa_results.append(toa_value)
-                        remaining -= 1
-
-                        # NOTE: The following sleep is required for hardware timing stability.
-                        time.sleep(getattr(self, 'injection_delay', 0.001))
-
-                    # 4. Calcolo delle statistiche (dopo tutte le N iniezioni)
-                    if not tot_results:
-                        raise RuntimeError(f"Nessun dato ToT/ToA raccolto a {voltage} mV.")
-
-                    # Filtra i risultati validi (non NaN)
-                    valid_tot_results = [r for r in tot_results if not math.isnan(r)]
-                    valid_toa_results = [r for r in toa_results if not math.isnan(r)]
-
-                    print(valid_tot_results)
-
-                    if not valid_tot_results:
-                        avg_tot, std_tot = float('nan'), float('nan')
-                        print(f"AVVISO: Nessun dato ToT valido raccolto a {voltage} mV.")
-                    else:
-                        avg_tot = statistics.mean(valid_tot_results)
-                        std_tot = statistics.stdev(valid_tot_results) if len(valid_tot_results) > 1 else 0.0
-
-                    if not valid_toa_results:
-                        avg_toa, std_toa = float('nan'), float('nan')
-                        print(f"AVVISO: Nessun dato ToA valido raccolto a {voltage} mV.")
-                    else:
-                        avg_toa = statistics.mean(valid_toa_results)
-                        std_toa = statistics.stdev(valid_toa_results) if len(valid_toa_results) > 1 else 0.0
-
-                    # Calcola l'efficienza: numero di hit / numero totale di iniezioni
-                    num_hits_tot = sum(1 for tot in tot_results if tot > 0)
-                    efficiency_tot = num_hits_tot / num_injections if num_injections > 0 else 0.0
-                    num_hits_toa = sum(1 for toa in toa_results if toa > 0)
-                    efficiency_toa = num_hits_toa / num_injections if num_injections > 0 else 0.0
-
-                    # 5. Scrittura della riga sul file (una sola riga per tensione)
-                    self.exporter.write_falaphel_data_row(
-                        voltage=voltage,
-                        tot_avg=avg_tot,
-                        tot_std=std_tot,
-                        toa_avg=avg_toa,
-                        toa_std=std_toa,
-                        efficiency_tot=efficiency_tot,
-                        efficiency_toa=efficiency_toa
-                    )
-
-                    print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}\n")
-
-            # --- CRONOMETRAGGIO FINE ---
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            # -------------------------
-
-            # 6. Risultato finale
-            print(f"Pixel injection sweep completed.")
-            print(f"⏳ **Tempo Totale di Esecuzione dello Sweep:** **{elapsed_time:.2f} secondi**")
+            # Delega l'intera operazione di sweep all'Engine
+            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, pixel_config_params, inj_params)
+            
             messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")
+        except RuntimeError as e:
+            messagebox.showerror("Service Error", f"{e}")
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
-        finally:
-            # Assicurati che l'alimentazione sia spenta alla fine, anche in caso di errore
-            try:
-                self.ps_service.output_off(channel=1)
-                print("Power Supply turned off.")
-            except Exception as e:
-                print(f"Warning: Could not turn off Power Supply: {e}")
+
 
     # --- WIDGET E LAYOUT ---
     def _create_widgets(self):
-        """Costruisce tutti i widget della GUI."""
-        # (omesso qui per brevità ma mantieni il tuo layout identico)
+        """Costruisce tutti i widget della GUI (Identico al codice originale, aggiornati solo i comandi)."""
+        # --- Sezione Connessione ---
         frame_conn = ttk.LabelFrame(self.master, text="Connection Settings", borderwidth=3, relief="solid")
         frame_conn.grid(row=0, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
         tk.Label(frame_conn, text="Port:").grid(row=0, column=0, padx=5, pady=2, sticky="w")
@@ -413,14 +197,30 @@ class FpgaControlApp:
         tk.Label(frame_conn, text="Baudrate:").grid(row=1, column=0, padx=5, pady=2, sticky="w")
         tk.Entry(frame_conn, textvariable=self.baud_entry).grid(row=1, column=1, padx=5, pady=2, sticky="ew")
 
+        # --- Sezione Comandi Singoli ---
         frame_single = ttk.LabelFrame(self.master, text="Single Commands Section")
+        frame_single.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+        # Read/Write Register (Aggiunti per completezza del refactoring, anche se non erano nel codice iniziale ma impliciti)
+        tk.Label(frame_single, text="Write Addr (Hex):").grid(row=0, column=0, padx=5, pady=2, sticky="w")
+        tk.Entry(frame_single, textvariable=self.write_addr_entry).grid(row=0, column=1, padx=5, pady=2, sticky="ew")
+        tk.Label(frame_single, text="Write Data (Hex):").grid(row=1, column=0, padx=5, pady=2, sticky="w")
+        tk.Entry(frame_single, textvariable=self.write_data_entry).grid(row=1, column=1, padx=5, pady=2, sticky="ew")
+        tk.Button(frame_single, text="Send Write", command=self._send_write_gui).grid(row=2, column=0, columnspan=2, pady=5)
+
+        tk.Label(frame_single, text="Read Addr (Hex):").grid(row=3, column=0, padx=5, pady=2, sticky="w")
+        tk.Entry(frame_single, textvariable=self.read_addr_entry).grid(row=3, column=1, padx=5, pady=2, sticky="ew")
+        tk.Button(frame_single, text="Send Read", command=self._send_read_gui).grid(row=4, column=0, columnspan=2, pady=5)
+        
         tk.Label(frame_single, text="Read Result:").grid(row=5, column=0, padx=5, pady=2, sticky="w")
         tk.Entry(frame_single, textvariable=self.result_var, state='readonly').grid(row=5, column=1, padx=5, pady=2, sticky="ew")
-        frame_single.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
-        tk.Label(frame_single, text="Config (20 bit binary):").grid(row=0, column=0, padx=5, pady=2, sticky="w")
-        tk.Entry(frame_single, textvariable=self.config_entry).grid(row=0, column=1, padx=5, pady=2, sticky="ew")
-        tk.Button(frame_single, text="Send Configuration", command=self._send_configuration).grid(row=1, column=0, columnspan=2, pady=5)
+        
+        # Configurazione ASIC
+        tk.Label(frame_single, text="Config (20 bit binary):").grid(row=6, column=0, padx=5, pady=2, sticky="w")
+        tk.Entry(frame_single, textvariable=self.config_entry).grid(row=6, column=1, padx=5, pady=2, sticky="ew")
+        tk.Button(frame_single, text="Send Configuration", command=self._send_configuration).grid(row=7, column=0, columnspan=2, pady=5)
 
+
+        # --- Sezione Calibrazione/Iniezione ---
         frame_inj = ttk.LabelFrame(self.master, text="Calibration/Injection Settings")
         frame_inj.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
@@ -456,14 +256,28 @@ class FpgaControlApp:
 # MAIN
 # ============================================================================== 
 def signal_handler(sig, frame):
-    psService = PowerSupplyService()
-    psService.output_off(channel=1)
-    print("Ctrl+C pressed. Exiting gracefully.")
+    # La gestione del segnale deve spegnere il power supply
+    # Questo richiede che il PowerSupplyService sia disponibile in questo contesto.
+    if not USE_SERIAL:
+        try:
+            psService = PowerSupplyService()
+            psService.output_off(channel=1)
+            print("Ctrl+C pressed. Power Supply channel 1 turned off. Exiting gracefully.")
+        except Exception as e:
+            print(f"Ctrl+C pressed. Warning: Could not turn off Power Supply: {e}")
+    else:
+        print("Ctrl+C pressed. Exiting gracefully.")
+        
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
+    # Assicurati che l'import di PowerSupplyService sia gestito
+    if not USE_SERIAL and 'PowerSupplyService' not in locals():
+         print("FATAL: Per USE_SERIAL=False, assicurarsi che power_supply_controller sia importabile.")
+         sys.exit(1)
+         
     root = tk.Tk()
     app = FpgaControlApp(root)
     root.mainloop()
