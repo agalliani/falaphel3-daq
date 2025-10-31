@@ -153,7 +153,7 @@ class FpgaMeasurementEngine:
 
     # --- INIEZIONE E SWEEP ---
 
-    def _inject_a_pixel_opt(self, x: int, y: int, pixel_config_params: Dict[str, int], inj_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
+    def _inject_a_pixel_opt(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel. La configurazione viene eseguita solo se il pixel è cambiato."""
         
         current_pixel = (x, y)
@@ -258,7 +258,7 @@ class FpgaMeasurementEngine:
             return tot_value, toa_value
             
     def perform_sweep(self, port: str, baud: int, sweep_params: Dict[str, int], 
-                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int]) -> float:
+                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int], ser_int: SerialInterface) -> float:
         """Esegue una scansione completa variando la tensione di soglia."""
 
         all_sweep_data = []
@@ -306,7 +306,7 @@ class FpgaMeasurementEngine:
 
                     remaining = num_injections
                     while remaining > 0:
-                        tot_value, toa_value = self._inject_a_pixel_opt(pixel_x, pixel_y, binary_command_params, ser_int)
+                        tot_value, toa_value = self._inject_a_pixel(pixel_x, pixel_y, binary_command_params, ser_int)
                         
                         # Gestione dei risultati e retry/decremento (Logica di elaborazione)
                         if math.isnan(tot_value) and math.isnan(toa_value):
