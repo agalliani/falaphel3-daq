@@ -283,11 +283,10 @@ class FpgaControlApp:
                 "cap25": self.config_cap25.get(),
                 "cap_csa_load": self.config_cap_csa_load.get(),
                 "dac_th": self.config_dac_th.get(),
-                "test_en": self.config_test_en.get(),
                 "t_up": self.config_t_up.get()
             }
 
-            self.writer.create_falaphel_file(config)
+            self.exporter.create_falaphel_file(config)
 
             # 1. Recupera i valori dalla GUI
             start_voltage = self.sweep_start_v.get()
