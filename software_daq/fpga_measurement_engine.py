@@ -211,7 +211,8 @@ class FpgaMeasurementEngine:
         
         try:
             # 1. Inizializzazione file di esportazione
-            self.exporter.create_falaphel_file(pixel_config_params)
+            if not isMatrixScan:
+                self.exporter.create_falaphel_file(pixel_config_params)
 
             # 2. Connessione e preparazione power supply
             self.connect_power_supply() # Usa l'iniezione per connettersi
@@ -374,6 +375,7 @@ class FpgaMeasurementEngine:
         total_pixels = matrix_rows * matrix_cols
 
 
+
         # Genera i comandi binari per il pixel corrente
         pad_word = self.asic_config.get_init_pad_string()
 
@@ -385,6 +387,7 @@ class FpgaMeasurementEngine:
             cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
             t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
         )
+
 
         inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
             bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=1
@@ -402,74 +405,72 @@ class FpgaMeasurementEngine:
         print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
         print(f"Injections per voltage: {sweep_params['num_injections']}")
 
+        try:
+            self.exporter.create_matrix_scan_file(pixel_config_params)
+          
+            scan_start_time = time.time()
+            pixel_times = []
+            failed_pixels = []
+            
+            for y in range(matrix_rows):
+                for x in range(matrix_cols):
+                    pixel_num = y * matrix_cols + x + 1
+                    print(f"\n{'='*60}")
+                    print(f"Processing pixel {pixel_num}/{total_pixels}: X={x}, Y={y}")
+                    print(f"{'='*60}")
+                                # Aggiorna i parametri per il pixel corrente
+                    current_sweep_params = sweep_params.copy()
+                    current_sweep_params['pixel_x'] = x
+                    current_sweep_params['pixel_y'] = y
+                    current_pixel_config = pixel_config_params.copy()
+                    current_pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
+                                # Build binary_command_params for the current pixel
+                    current_binary_commands = {
+                        'pad_word': pad_word,
+                        'pointer_word': current_pointer_word,
+                        'config_pixel_word': config_pixel_word,
+                        'inj_word1_start': inj_word1_start,
+                        'inj_word2_start': inj_word2_start,
+                        'inj_word1_stop': inj_word1_stop,
+                        'inj_word2_stop': inj_word2_stop,
+                        'tot_request': tot_request,
+                        'toa_request': toa_request
+                    }
+                    try:
+                        elapsed = self.perform_sweep(
+                            port, baud, current_sweep_params, 
+                            current_binary_commands, current_pixel_config, isMatrixScan=True
+                        )
+                        pixel_times.append(elapsed)
+                        print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
+                    except Exception as e:
+                        print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
+                        failed_pixels.append((x, y))
+                        continue
+                    scan_end_time = time.time()
+            
+            
+            total_scan_time = scan_end_time - scan_start_time
+                        # Statistiche finali
+            successful_pixels = total_pixels - len(failed_pixels)
+            avg_pixel_time = statistics.mean(pixel_times) if pixel_times else 0.0
+            scan_stats = {
+                'total_pixels': total_pixels,
+                'successful_pixels': successful_pixels,
+                'failed_pixels': failed_pixels,
+                'total_time': total_scan_time,
+                'avg_time_per_pixel': avg_pixel_time
+            }
+            print(f"\n{'='*60}")
+            print(f"MATRIX SCAN COMPLETED")
+            print(f"{'='*60}")
+            print(f"Total time: {total_scan_time:.2f}s ({total_scan_time/60:.2f} minutes)")
+            print(f"Successful pixels: {successful_pixels}/{total_pixels}")
+            print(f"Average time per pixel: {avg_pixel_time:.2f}s")
+            if failed_pixels:
+                print(f"Failed pixels: {failed_pixels}")
+            return scan_stats
+        
+        except Exception as e:
+            raise RuntimeError(f"Failed to create matrix scan export file: {e}")
 
-        scan_start_time = time.time()
-        pixel_times = []
-        failed_pixels = []
-
-        for y in range(matrix_rows):
-            for x in range(matrix_cols):
-                pixel_num = y * matrix_cols + x + 1
-                print(f"\n{'='*60}")
-                print(f"Processing pixel {pixel_num}/{total_pixels}: X={x}, Y={y}")
-                print(f"{'='*60}")
-
-                # Aggiorna i parametri per il pixel corrente
-                current_sweep_params = sweep_params.copy()
-                current_sweep_params['pixel_x'] = x
-                current_sweep_params['pixel_y'] = y
-
-                current_pixel_config = pixel_config_params.copy()
-                current_pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
-
-                # Build binary_command_params for the current pixel
-                current_binary_commands = {
-                    'pad_word': pad_word,
-                    'pointer_word': current_pointer_word,
-                    'config_pixel_word': config_pixel_word,
-                    'inj_word1_start': inj_word1_start,
-                    'inj_word2_start': inj_word2_start,
-                    'inj_word1_stop': inj_word1_stop,
-                    'inj_word2_stop': inj_word2_stop,
-                    'tot_request': tot_request,
-                    'toa_request': toa_request
-                }
-
-                try:
-                    elapsed = self.perform_sweep(
-                        port, baud, current_sweep_params, 
-                        current_binary_commands, current_pixel_config
-                    )
-                    pixel_times.append(elapsed)
-                    print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
-
-                except Exception as e:
-                    print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
-                    failed_pixels.append((x, y))
-                    continue
-                  
-        scan_end_time = time.time()
-        total_scan_time = scan_end_time - scan_start_time
-
-        # Statistiche finali
-        successful_pixels = total_pixels - len(failed_pixels)
-        avg_pixel_time = statistics.mean(pixel_times) if pixel_times else 0.0
-
-        scan_stats = {
-            'total_pixels': total_pixels,
-            'successful_pixels': successful_pixels,
-            'failed_pixels': failed_pixels,
-            'total_time': total_scan_time,
-            'avg_time_per_pixel': avg_pixel_time
-        }
-
-        print(f"\n{'='*60}")
-        print(f"MATRIX SCAN COMPLETED")
-        print(f"{'='*60}")
-        print(f"Total time: {total_scan_time:.2f}s ({total_scan_time/60:.2f} minutes)")
-        print(f"Successful pixels: {successful_pixels}/{total_pixels}")
-        print(f"Average time per pixel: {avg_pixel_time:.2f}s")
-        if failed_pixels:
-            print(f"Failed pixels: {failed_pixels}")
-
-        return scan_stats

@@ -156,6 +156,7 @@ class ExportService(metaclass=Singleton):
         for key in ["cap50", "cap25", "cap_csa_load", "t_up"]:
             if config.get(key, 0) != 0:
                 suffix_parts.append(f"_{key}")
+        
         # multi-bit
         dac_th = config.get("dac_th", 0)
         if dac_th != 0:

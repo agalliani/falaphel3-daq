@@ -233,6 +233,7 @@ class FpgaControlApp:
                 'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
                 'out_en': self.config_out_en.get()
             }
+            
             injection_timing_settings = {
                 'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
                 'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
