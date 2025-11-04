@@ -252,3 +252,4 @@ class AsicConfigurator:
         else:
             # print("ToA not valid: NaN")
             return float('nan')
+

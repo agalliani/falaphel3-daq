@@ -151,40 +151,7 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Pixel injection error: {e}")
 
-    def _sweep_pixel_injection(self):
-        """Prepara i parametri dello sweep e delega all'Engine."""
-        try:
-            port = self.port_entry.get()
-            baud = int(self.baud_entry.get())
-            
-            sweep_params = {
-                'start_v': self.sweep_start_v.get(), 'end_v': self.sweep_end_v.get(), 
-                'step_v': self.sweep_step_v.get(), 'num_injections': self.num_injections.get(),
-                'pixel_x': self.inj_pixel_x.get(), 'pixel_y': self.inj_pixel_y.get()
-            }
-            pixel_config_params = {
-                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
-                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
-                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
-                'out_en': self.config_out_en.get()
-            }
-            inj_params = {
-                'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
-                'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
-            }
-            
-
-            # Delega l'intera operazione di sweep all'Engine
-            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, pixel_config_params, inj_params)
-            
-            messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
-
-        except ValueError as e:
-            messagebox.showerror("Input Error", f"Error in input values: {e}")
-        except RuntimeError as e:
-            messagebox.showerror("Service Error", f"{e}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
+ 
         
         
     def _sweep_pixel_injection_opt(self):
@@ -249,6 +216,46 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error during pixel injection sweep: {e}")
 
+    def _scan_matrix_injection(self):
+        """Scansiona tutta la matrice dei pixel e inietta su ciascuno."""
+        try:
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+
+            scan_params= {
+                'start_v': self.sweep_start_v.get(), 'end_v': self.sweep_end_v.get(), 
+                'step_v': self.sweep_step_v.get(), 'num_injections': self.num_injections.get(),
+                'pixel_x': self.inj_pixel_x.get(), 'pixel_y': self.inj_pixel_y.get()
+            }
+            pixel_config_params = {
+                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
+                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
+                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
+                'out_en': self.config_out_en.get()
+            }
+            injection_timing_settings = {
+                'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
+                'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
+            }
+
+
+            # Delega l'intera operazione di scansione all'Engine
+            elapsed_time = self.engine.perform_matrix_scan(
+                port=port,
+                baud=baud,
+                sweep_params=scan_params,
+                timing_injection_settings=injection_timing_settings,
+                pixel_config_params_template=scan_pixel_config_params
+                )
+            
+            messagebox.showinfo("Success", f"Matrix injection scan completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
+
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Error in input values: {e}")
+        except RuntimeError as e:
+            messagebox.showerror("Service Error", f"{e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error during matrix injection scan: {e}")
 
     # --- WIDGET E LAYOUT ---
     def _create_widgets(self):

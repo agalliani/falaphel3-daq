@@ -151,75 +151,7 @@ class FpgaMeasurementEngine:
             except Exception as e:
                 print(f"Warning: Could not turn off Power Supply: {e}")
 
-    # --- INIEZIONE E SWEEP ---
-
-    def _inject_a_pixel_opt(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
-        """Esegue l'iniezione su un singolo pixel. La configurazione viene eseguita solo se il pixel è cambiato."""
-        
-        current_pixel = (x, y)
-        
-        # 1. Genera le parole da inviare
-        
-        # *****************************************************************
-        # ⚠️ Verifica della configurazione: la eseguo solo se il pixel è nuovo
-        # *****************************************************************
-        if current_pixel != self._last_configured_pixel:
-            # Generazione delle parole di configurazione (se necessario)
-            pad_word = self.asic_config.get_init_pad_string()
-            pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
-            config_pixel_word = self.asic_config.get_config_pointed_pixel(
-                cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
-                cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
-                t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
-            )
-            
-            # Generazione delle parole di iniezione (queste vengono sempre rigenerate)
-            inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
-             bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=1
-            )
-
-            # Sequenza di configurazione pixel
-            try:
-                # Eseguo l'invio solo se devo riconfigurare
-                self._send_spi_word(ser_int, pad_word)
-                self._send_spi_word(ser_int, pointer_word)
-                self._send_spi_word(ser_int, config_pixel_word)
-                self._send_spi_word(ser_int, inj_word2_start)
-                
-                # Aggiorna lo stato: questo pixel è ora configurato
-                self._last_configured_pixel = current_pixel
-                
-            except Exception as e:
-                raise Exception(f"Errore durante la configurazione iniziale del pixel ({x},{y}): {e}")
-
-        # Se il pixel non è cambiato, le parole di configurazione *non* vengono generate e inviate.
-        # Il pad e il pixel rimangono configurati dall'ultima esecuzione.
-        
-    
-        inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
-            bypass_1b=inj_params['bypass'], period_8b=inj_params['period'], burst_8b=inj_params['burst'], duty_4b=inj_params['duty'], start_1b=0
-        )
-        tot_request = self.asic_config.get_save_tot_command()
-        toa_request = self.asic_config.get_save_toa_command()
-
-        # 2. Sequenza di comunicazione - Solo Iniezione e Lettura
-        try:
-            # Sequenza di iniezione START
-            self._send_spi_word(ser_int, inj_word1_start)
-            # Richiesta ToT e ToA
-            tot_response_raw = self._send_spi_word(ser_int, tot_request)
-            toa_response_raw = self._send_spi_word(ser_int, toa_request)
-            # Ripristino pixel dopo iniezione STOP
-            self._send_spi_word(ser_int, inj_word1_stop)
-            
-            # 3. Elabora risultati
-            tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
-            toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
-            
-            return tot_value, toa_value
-        except Exception as e:
-            raise Exception(f"Errore durante l'iniezione/lettura del pixel: {e}")
-
+   
     def _inject_a_pixel(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
     
@@ -274,6 +206,8 @@ class FpgaMeasurementEngine:
 
         if step <= 0:
             raise ValueError("Lo step di tensione deve essere un numero intero positivo.")
+        if num_injections <= 0:
+            raise ValueError("Il numero di iniezioni deve essere maggiore di zero.")
         
         try:
             # 1. Inizializzazione file di esportazione
@@ -285,7 +219,7 @@ class FpgaMeasurementEngine:
             
             # 3. Genera la lista di tensioni
             sweep_step = -step if start_voltage > end_voltage else step
-            stop_value = end_voltage - 1 if start_voltage > end_voltage else end_voltage + 1
+            stop_value = end_voltage - step if start_voltage > end_voltage else end_voltage + 1
             voltages = list(range(start_voltage, stop_value, sweep_step))
             
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
@@ -334,12 +268,15 @@ class FpgaMeasurementEngine:
                         avg_tot, std_tot = float('nan'), float('nan')
                     else:
                         avg_tot = statistics.mean(valid_tot_results)
+                        # If only one result, set std to 0.0 to avoid statistics.StatisticsError
+                        # This is mathematically correct, but statistics.stdev() would raise an exception.
                         std_tot = statistics.stdev(valid_tot_results) if len(valid_tot_results) > 1 else 0.0
 
                     if not valid_toa_results:
                         avg_toa, std_toa = float('nan'), float('nan')
                     else:
                         avg_toa = statistics.mean(valid_toa_results)
+                        # If only one result, set std to 0.0 to avoid statistics.StatisticsError
                         std_toa = statistics.stdev(valid_toa_results) if len(valid_toa_results) > 1 else 0.0
 
                     # Calcola l'efficienza
@@ -356,17 +293,174 @@ class FpgaMeasurementEngine:
                     }
                     all_sweep_data.append(data_row)
                     print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")
-
-  
             # 6. SCRITTURA FINALE in BLOCCO
+            # Note: If write_falaphel_data_bulk fails, the exception is intentionally allowed to propagate for GUI error handling.
             self.exporter.write_falaphel_data_bulk(all_sweep_data)
             end_time = time.time()
             elapsed_time = end_time - start_time
             print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
             return elapsed_time
+            print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
+            return elapsed_time
 
         except Exception as e:
             print(f"FATAL: Error during pixel injection sweep: {e}")
-            raise e # Rilancia l'errore per la GUI
         finally:
+            # Safe to call even if ps_service was never initialized or connected, due to internal check in _shutdown_power_supply.
             self._shutdown_power_supply() # Assicurati che l'alimentazione sia spenta
+            self._shutdown_power_supply() # Assicurati che l'alimentazione sia spenta
+
+
+    def perform_matrix_scan(self, port: str, baud: int, sweep_params: Dict[str, int], timing_injection_settings: Dict[str, int],
+                           pixel_config_params: Dict[str, int]) -> Dict[str, Any]:
+        """
+        Esegue uno scan completo della matrice 8x32 pixel.
+        Per ogni pixel, esegue un perform_sweep completo.
+
+        Args:
+            port: Porta seriale
+            baud: Baudrate
+            sweep_params: Parametri di sweep (start_v, end_v, step_v, num_injections)
+                          Nota: pixel_x e pixel_y verranno sovrascritti
+            timing_injection_settings: Impostazioni di temporizzazione per l'iniezione
+            pixel_config_params: Template della configurazione pixel (verrà aggiornato per ogni pixel)
+            
+            sweep_params = {
+                'start_v', 
+                'step_v',
+                'pixel_x',
+                'pixel_y'
+            }
+
+            timing_injection_settings = {
+                'bypass',
+                'period',
+                'burst',
+                'duty'
+            }
+
+            pixel_config_params = {
+                'cap25',
+                'dac_th', 
+                'test_en',
+                'cap50',
+                'cap_csa_load',
+                't_up', 
+                'out_en
+            }
+
+        Returns:
+            Dizionario con statistiche dello scan completo.
+            scan_stats = {
+                'total_pixels',
+                'successful_pixels',
+                'failed_pixels',
+                'total_time',
+                'avg_time_per_pixel'
+            }
+
+        """
+        matrix_rows = 8
+        matrix_cols = 32
+        total_pixels = matrix_rows * matrix_cols
+
+
+        # Genera i comandi binari per il pixel corrente
+        pad_word = self.asic_config.get_init_pad_string()
+
+        # Initialize pointer_word for the first pixel (0,0); will be updated per-pixel in the loop
+        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=0, y_3b=0)
+
+        config_pixel_word = self.asic_config.get_config_pointed_pixel(
+            cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
+            cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
+            t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+        )
+
+        inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
+            bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=1
+        )
+        inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
+            bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=0
+        )
+        tot_request = self.asic_config.get_save_tot_command()
+        print(f"Starting full matrix scan: {matrix_rows}x{matrix_cols} = {total_pixels} pixels")
+        print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
+        print(f"Injections per voltage: {sweep_params['num_injections']}")
+        print(f"Starting full matrix scan: {matrix_rows}x{matrix_cols} = {total_pixels} pixels")
+        print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
+        print(f"Injections per voltage: {sweep_params['num_injections']}")
+
+
+
+
+        scan_start_time = time.time()
+        pixel_times = []
+        failed_pixels = []
+
+        for y in range(matrix_rows):
+            for x in range(matrix_cols):
+                pixel_num = y * matrix_cols + x + 1
+                print(f"\n{'='*60}")
+                print(f"Processing pixel {pixel_num}/{total_pixels}: X={x}, Y={y}")
+                print(f"{'='*60}")
+
+                # Aggiorna i parametri per il pixel corrente
+                current_sweep_params = sweep_params.copy()
+                current_sweep_params['pixel_x'] = x
+                current_sweep_params['pixel_y'] = y
+
+                current_pixel_config = pixel_config_params.copy()
+                current_pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
+
+                # Build binary_command_params for the current pixel
+                current_binary_commands = {
+                    'pad_word': pad_word,
+                    'pointer_word': current_pointer_word,
+                    'config_pixel_word': config_pixel_word,
+                    'inj_word1_start': inj_word1_start,
+                    'inj_word2_start': inj_word2_start,
+                    'inj_word1_stop': inj_word1_stop,
+                    'inj_word2_stop': inj_word2_stop,
+                    'tot_request': tot_request,
+                    'toa_request': toa_request
+                }
+
+                try:
+                    elapsed = self.perform_sweep(
+                        port, baud, current_sweep_params, 
+                        current_binary_commands, current_pixel_config
+                    )
+                    pixel_times.append(elapsed)
+                    print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
+
+                except Exception as e:
+                    print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
+                    failed_pixels.append((x, y))
+                    continue
+                  
+        scan_end_time = time.time()
+        total_scan_time = scan_end_time - scan_start_time
+
+        # Statistiche finali
+        successful_pixels = total_pixels - len(failed_pixels)
+        avg_pixel_time = statistics.mean(pixel_times) if pixel_times else 0.0
+
+        scan_stats = {
+            'total_pixels': total_pixels,
+            'successful_pixels': successful_pixels,
+            'failed_pixels': failed_pixels,
+            'total_time': total_scan_time,
+            'avg_time_per_pixel': avg_pixel_time
+        }
+
+        print(f"\n{'='*60}")
+        print(f"MATRIX SCAN COMPLETED")
+        print(f"{'='*60}")
+        print(f"Total time: {total_scan_time:.2f}s ({total_scan_time/60:.2f} minutes)")
+        print(f"Successful pixels: {successful_pixels}/{total_pixels}")
+        print(f"Average time per pixel: {avg_pixel_time:.2f}s")
+        if failed_pixels:
+            print(f"Failed pixels: {failed_pixels}")
+
+        return scan_stats
