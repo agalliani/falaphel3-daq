@@ -294,6 +294,8 @@ class FpgaMeasurementEngine:
             
             # *** Ottimizzazione principale: apro la connessione seriale UNA SOLA VOLTA ***
             with self._get_serial_interface(port, baud) as ser_int:
+                self.ps_service.output_on(channel=1)
+
                 for voltage in voltages:
                     tot_results: List[float] = []
                     toa_results: List[float] = []
@@ -301,7 +303,6 @@ class FpgaMeasurementEngine:
                     
                     # Imposta la tensione e accendi
                     self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
-                    self.ps_service.output_on(channel=1)
 
                     remaining = num_injections
                     while remaining > 0:

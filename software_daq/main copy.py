@@ -305,10 +305,9 @@ class FpgaControlApp:
             self._connect_power_supply()
 
             # Canale 2 del power supply fisso a 0V 
-            self.ps_service.set_channel_voltage(channel=2, voltage=0.0)
             self.ps_service.set_channel_current(channel=2, current=0.1)
+            self.ps_service.output_on(channel=1)
             self.ps_service.output_on(channel=2)
-
             self.ps_service.set_channel_current(channel=1, current=0.1)
 
 
@@ -334,7 +333,6 @@ class FpgaControlApp:
                 #self.ps_service.output_off(channel=1)
                 print(f"--- Setting Vth to {voltage} mV ---")
                 self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
-                self.ps_service.output_on(channel=1)
 
                 # Attendi un breve periodo per la stabilizzazione
                 #time.sleep(0.09)
