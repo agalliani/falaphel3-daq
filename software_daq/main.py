@@ -205,7 +205,7 @@ class FpgaControlApp:
             }
 
             # Delega l'intera operazione di sweep all'Engine
-            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, binary_command_params, pixel_config_params)
+            elapsed_time = self.engine.perform_sweep(port, baud, sweep_params, binary_command_params, pixel_config_params, isMatrixScan=False)
             
             messagebox.showinfo("Success", f"Pixel injection sweep completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
 
@@ -311,7 +311,7 @@ class FpgaControlApp:
         tk.Checkbutton(frame_pixel_config, text="t_up", variable=self.config_t_up).grid(row=3, column=1, padx=5, sticky="w")
         tk.Checkbutton(frame_pixel_config, text="out_en", variable=self.config_out_en).grid(row=3, column=2, padx=5, sticky="w")
 
-        tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button, bg="light blue").grid(row=4, column=0, columnspan=4, pady=10)
+        #tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button, bg="light blue").grid(row=4, column=0, columnspan=4, pady=10)
 
         tk.Label(frame_inj, text="Start Vth (mV):").grid(row=5, column=0, padx=5, sticky="w")
         tk.Spinbox(frame_inj, textvariable=self.sweep_start_v, from_=0, to=1000, width=10).grid(row=5, column=1, padx=5, sticky="ew")
