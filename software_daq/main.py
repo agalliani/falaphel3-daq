@@ -322,6 +322,16 @@ class FpgaControlApp:
         tk.Spinbox(frame_inj, textvariable=self.num_injections, from_=1, to=10000, width=10).grid(row=8, column=1, padx=5, sticky="ew")
 
         tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection_opt, bg="light green").grid(row=9, column=0, columnspan=4, pady=10)
+        
+        # --- Sezione Scansione Matrice ---
+        frame_matrix = ttk.LabelFrame(self.master, text="Matrix Scan")
+        frame_matrix.grid(row=3, column=2, padx=10, pady=10, sticky="nsew")
+
+        tk.Label(frame_matrix, text="Matrix Scan Settings", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2, pady=5)
+        tk.Label(frame_matrix, text="Uses sweep and pixel config", font=("Arial", 8, "italic")).grid(row=1, column=0, columnspan=2, pady=2)
+        tk.Label(frame_matrix, text="from left section").grid(row=2, column=0, columnspan=2, pady=2)
+
+        tk.Button(frame_matrix, text="Start Matrix Scan", command=self._scan_matrix_injection, bg="orange", font=("Arial", 10, "bold")).grid(row=3, column=0, columnspan=2, pady=20, padx=10, sticky="ew")
 
 # ============================================================================== 
 # MAIN
