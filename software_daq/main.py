@@ -240,7 +240,7 @@ class FpgaControlApp:
 
 
             # Delega l'intera operazione di scansione all'Engine
-            elapsed_time = self.engine.perform_matrix_scan(
+            total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
                 port=port,
                 baud=baud,
                 sweep_params=scan_params,
@@ -248,7 +248,7 @@ class FpgaControlApp:
                 pixel_config_params=pixel_config_params
                 )
             
-            messagebox.showinfo("Success", f"Matrix injection scan completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
+            messagebox.showinfo("Success", f"Matrix injection scan completed successfully in {total_time:.2f} seconds. Data saved to file.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")

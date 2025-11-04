@@ -142,3 +142,73 @@ class ExportService(metaclass=Singleton):
 
         except Exception as e:
             print(f"Errore nella scrittura BULK del file 'falaphel': {e}")
+
+
+
+    
+    def create_matrix_scan_file(self, config):
+        """
+        Crea un file per i dati dello scan della matrice.
+        config: dict con le configurazioni (interi)
+        """
+        suffix_parts = []
+        # boolean flags
+        for key in ["cap50", "cap25", "cap_csa_load", "t_up"]:
+            if config.get(key, 0) != 0:
+                suffix_parts.append(f"_{key}")
+        # multi-bit
+        dac_th = config.get("dac_th", 0)
+        if dac_th != 0:
+            suffix_parts.append(f"_dacth_{dac_th}")
+        suffix_string = "".join(suffix_parts)
+        timestamp = time.strftime("%y%m%d_%H%M%S")
+        file_name = f"export_matrix_scan_{timestamp}{suffix_string}.tsv"
+        target_path = self.directory / file_name
+        self.matrixScanPath = target_path
+        try:
+            with open(self.matrixScanPath, "w") as file:
+                # Personalizza l'intestazione secondo i dati della matrice
+                header = "row\tcol\ttot_avg\ttot_std\ttoa_avg\ttoa_std\tefficiency_tot\tefficiency_toa\n"
+                file.write(header)
+            print(f"File '{file_name}' creato in: {self.directory}")
+        except Exception as e:
+            print(f"Errore: {e}")
+            self.matrixScanPath = None
+            raise
+
+    def write_matrix_scan_data_bulk(self, data_rows: List[Dict[str, Any]]):
+        """
+        Scrive i dati dello scan della matrice in blocco.
+        
+        Args:
+            data_rows: Lista di dizionari con i dati (row, col, tot_avg, ecc.)
+        """
+        if not hasattr(self, 'matrixScanPath') or not self.matrixScanPath or not self.matrixScanPath.exists():
+            print("Errore: Il file matrix scan non è stato creato. Chiama prima create_matrix_scan_file().")
+            return 
+        
+        full_content = ""
+        try:
+            for row_data in data_rows:
+                row = row_data['row']
+                col = row_data['col']
+                tot_avg = row_data['tot_avg']
+                tot_std = row_data['tot_std']
+                toa_avg = row_data['toa_avg']
+                toa_std = row_data['toa_std']
+                efficiency_tot = row_data['efficiency_tot']
+                efficiency_toa = row_data['efficiency_toa']
+                
+                line = (
+                    f"{row}\t{col}\t{round(tot_avg, 3)}\t{round(tot_std, 3)}\t"
+                    f"{round(toa_avg, 3)}\t{round(toa_std, 3)}\t{round(efficiency_tot, 3)}\t{round(efficiency_toa, 3)}\n"
+                )
+                full_content += line
+            
+            with open(self.matrixScanPath, "a") as file:
+                file.write(full_content)
+                
+            print(f"Scritte {len(data_rows)} righe di dati matrix scan in blocco su {self.matrixScanPath.name}")
+
+        except Exception as e:
+            print(f"Errore nella scrittura BULK del file matrix scan: {e}")

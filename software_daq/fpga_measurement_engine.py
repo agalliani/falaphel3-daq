@@ -189,7 +189,7 @@ class FpgaMeasurementEngine:
             return tot_value, toa_value
             
     def perform_sweep(self, port: str, baud: int, sweep_params: Dict[str, int], 
-                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int]) -> float:
+                      binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int], isMatrixScan: bool = False) -> float:
         """Esegue una scansione completa variando la tensione di soglia."""
 
         all_sweep_data = []
@@ -294,11 +294,21 @@ class FpgaMeasurementEngine:
                     all_sweep_data.append(data_row)
                     print(f"Completed {num_injections} injections at {voltage} mV. AVG_ToT={avg_tot:.2f}, AVG_ToA={avg_toa:.2f}")
             # 6. SCRITTURA FINALE in BLOCCO
-            # Note: If write_falaphel_data_bulk fails, the exception is intentionally allowed to propagate for GUI error handling.
-            self.exporter.write_falaphel_data_bulk(all_sweep_data)
+
+            if not isMatrixScan:
+                print("Writing sweep data to file...")
+                
+                # Note: If write_falaphel_data_bulk fails, the exception is intentionally allowed to propagate for GUI error handling.
+                self.exporter.write_falaphel_data_bulk(all_sweep_data)
+
+                print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
+            else:
+                print("Matrix scan pixel data collected")
+                self.exporter.write_matrix_scan_data_bulk([{**data_row, 'row': pixel_y, 'col': pixel_x} for data_row in all_sweep_data])
+
+
             end_time = time.time()
             elapsed_time = end_time - start_time
-            print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
             return elapsed_time
 
 
