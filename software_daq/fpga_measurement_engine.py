@@ -300,8 +300,7 @@ class FpgaMeasurementEngine:
             elapsed_time = end_time - start_time
             print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
             return elapsed_time
-            print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
-            return elapsed_time
+
 
         except Exception as e:
             print(f"FATAL: Error during pixel injection sweep: {e}")
@@ -369,7 +368,7 @@ class FpgaMeasurementEngine:
         pad_word = self.asic_config.get_init_pad_string()
 
         # Initialize pointer_word for the first pixel (0,0); will be updated per-pixel in the loop
-        pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=0, y_3b=0)
+        #pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=0, y_3b=0)
 
         config_pixel_word = self.asic_config.get_config_pointed_pixel(
             cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
@@ -384,14 +383,14 @@ class FpgaMeasurementEngine:
             bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=0
         )
         tot_request = self.asic_config.get_save_tot_command()
+        toa_request = self.asic_config.get_save_toa_command()
+
         print(f"Starting full matrix scan: {matrix_rows}x{matrix_cols} = {total_pixels} pixels")
         print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
         print(f"Injections per voltage: {sweep_params['num_injections']}")
         print(f"Starting full matrix scan: {matrix_rows}x{matrix_cols} = {total_pixels} pixels")
         print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
         print(f"Injections per voltage: {sweep_params['num_injections']}")
-
-
 
 
         scan_start_time = time.time()

@@ -245,7 +245,7 @@ class FpgaControlApp:
                 baud=baud,
                 sweep_params=scan_params,
                 timing_injection_settings=injection_timing_settings,
-                pixel_config_params_template=scan_pixel_config_params
+                pixel_config_params=pixel_config_params
                 )
             
             messagebox.showinfo("Success", f"Matrix injection scan completed successfully in {elapsed_time:.2f} seconds. Data saved to file.")
