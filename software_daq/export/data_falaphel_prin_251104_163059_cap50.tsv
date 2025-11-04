@@ -1,0 +1,12 @@
+voltage	tot_avg	tot_std	toa_avg	toa_std	efficiency_tot	efficiency_toa
+60	1.0	0.392	nan	nan	0.925	0.0
+57	1.025	0.276	nan	nan	0.975	0.0
+54	1.05	0.221	nan	nan	1.0	0.0
+51	0.925	0.267	nan	nan	0.925	0.0
+48	0.35	0.483	nan	nan	0.35	0.0
+45	0.85	0.533	nan	nan	0.775	0.0
+42	0.325	0.526	nan	nan	0.3	0.0
+39	0.0	0.0	nan	nan	0.0	0.0
+36	0.0	0.0	nan	nan	0.0	0.0
+33	0.0	0.0	nan	nan	0.0	0.0
+30	0.0	0.0	nan	nan	0.0	0.0

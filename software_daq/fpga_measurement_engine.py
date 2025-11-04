@@ -180,13 +180,15 @@ class FpgaMeasurementEngine:
         except Exception as e:
             raise Exception(f"Errore durante l'iniezione/lettura del pixel: {e}")
 
-    def inject_single_pixel(self, port: str, baud: int, x: int, y: int, 
-                            pixel_config_params: Dict[str, int], inj_params: Dict[str, int]) -> Tuple[float, float]:
+    def inject_single_pixel(self, port: str, baud: int, x: int, y: int, binary_command_params: Dict[str, int]) -> Tuple[float, float]:
         """Inietta un singolo pixel. Apre e chiude la seriale localmente."""
         with self._get_serial_interface(port, baud) as ser_int:
-            tot_value, toa_value = self._inject_a_pixel(x, y, pixel_config_params, inj_params, ser_int)
+            tot_value, toa_value = self._inject_a_pixel(x, y, binary_command_params, ser_int)
             print(f"ToT={tot_value}\t ToA={toa_value}")
             return tot_value, toa_value
+        
+
+    #####################################################################################
             
     def perform_sweep(self, port: str, baud: int, sweep_params: Dict[str, int], 
                       binary_command_params: Dict[str, int], pixel_config_params: Dict[str, int], isMatrixScan: bool = False) -> float:
@@ -197,7 +199,7 @@ class FpgaMeasurementEngine:
         if not self.ps_service:
             raise RuntimeError("Impossibile eseguire lo sweep: Power Supply Service non disponibile (USE_SERIAL=True?).")
             
-        start_voltage = sweep_params['start_v']
+        start_voltage = sweep_params['start_v'] + sweep_params["step_v"]
         end_voltage = sweep_params['end_v']
         step = sweep_params['step_v']
         num_injections = sweep_params['num_injections']
@@ -302,7 +304,6 @@ class FpgaMeasurementEngine:
                 # Note: If write_falaphel_data_bulk fails, the exception is intentionally allowed to propagate for GUI error handling.
                 self.exporter.write_falaphel_data_bulk(all_sweep_data)
 
-                print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
             else:
                 print("Matrix scan pixel data collected")
                 self.exporter.write_matrix_scan_data_bulk([{**data_row, 'row': pixel_y, 'col': pixel_x} for data_row in all_sweep_data])
@@ -310,6 +311,8 @@ class FpgaMeasurementEngine:
 
             end_time = time.time()
             elapsed_time = end_time - start_time
+            print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
+
             return elapsed_time
 
 

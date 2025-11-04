@@ -61,10 +61,10 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
 
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=60)   # Tensione di partenza in mV
+        self.sweep_start_v = tk.IntVar(value=80)   # Tensione di partenza in mV
         self.sweep_end_v = tk.IntVar(value=30)     # Tensione di fine in mV
         self.sweep_step_v = tk.IntVar(value=3)     # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=40) # Numero di iniezioni per step
+        self.num_injections = tk.IntVar(value=31) # Numero di iniezioni per step
 
         # Variabili per l'iniezione su singolo pixel
         self.inj_pixel_x = tk.IntVar(value=0)
@@ -130,23 +130,42 @@ class FpgaControlApp:
             port = self.port_entry.get()
             baud = int(self.baud_entry.get())
             
-            pixel_config_params = {
-                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
-                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
-                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
-                'out_en': self.config_out_en.get()
-            }
-            inj_params = {
-                'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
-                'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
+            pad_word = self.asic_config.get_init_pad_string()
+            pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=self.inj_pixel_x.get(), y_3b=self.inj_pixel_y.get())
+
+            config_pixel_word = self.asic_config.get_config_pointed_pixel(
+                cap25_1b=self.config_cap25.get(), dac_th_5b=self.config_dac_th.get(), test_en_1b=self.config_test_en.get(), 
+                cap50_1b=self.config_cap50.get(), cap_csa_load_1b=self.config_cap_csa_load.get(), 
+                t_up_1b=self.config_t_up.get(), out_en_1b=self.config_out_en.get()
+            )
+
+            inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
+                bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(), burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=1
+            )
+            inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
+                bypass_1b=self.inj_bypass.get(), period_8b=self.inj_period.get(), burst_8b=self.inj_burst.get(), duty_4b=self.inj_duty.get(), start_1b=0
+            )
+            tot_request = self.asic_config.get_save_tot_command()
+            toa_request = self.asic_config.get_save_toa_command()
+
+            binary_command_params = {
+                'pad_word': pad_word,
+                'pointer_word': pointer_word,
+                'config_pixel_word': config_pixel_word,
+                'inj_word1_start': inj_word1_start,
+                'inj_word2_start': inj_word2_start,
+                'inj_word1_stop': inj_word1_stop,
+                'inj_word2_stop': inj_word2_stop,
+                'tot_request': tot_request,
+                'toa_request': toa_request
             }
             
             # Delega all'Engine (l'Engine chiamerà _inject_a_pixel con apertura/chiusura locale)
             tot_value, toa_value = self.engine.inject_single_pixel(
                 port, baud, self.inj_pixel_x.get(), self.inj_pixel_y.get(), 
-                pixel_config_params, inj_params
+                binary_command_params
             )
-            messagebox.showinfo("Injection Result", f"Pixel ({self.inj_pixel_x.get()},{self.inj_pixel_y.get()}) injected.\nToT={tot_value:.2f}, ToA={toa_value:.2f}")
+            #messagebox.showinfo("Injection Result", f"Pixel ({self.inj_pixel_x.get()},{self.inj_pixel_y.get()}) injected.\nToT={tot_value:.2f}, ToA={toa_value:.2f}")
 
         except Exception as e:
             messagebox.showerror("Error", f"Pixel injection error: {e}")
@@ -311,7 +330,7 @@ class FpgaControlApp:
         tk.Checkbutton(frame_pixel_config, text="t_up", variable=self.config_t_up).grid(row=3, column=1, padx=5, sticky="w")
         tk.Checkbutton(frame_pixel_config, text="out_en", variable=self.config_out_en).grid(row=3, column=2, padx=5, sticky="w")
 
-        #tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button, bg="light blue").grid(row=4, column=0, columnspan=4, pady=10)
+        tk.Button(frame_inj, text="Inject Single Pixel (X,Y)", command=self.inject_single_pixel_4button, bg="light blue").grid(row=4, column=0, columnspan=4, pady=10)
 
         tk.Label(frame_inj, text="Start Vth (mV):").grid(row=5, column=0, padx=5, sticky="w")
         tk.Spinbox(frame_inj, textvariable=self.sweep_start_v, from_=0, to=1000, width=10).grid(row=5, column=1, padx=5, sticky="ew")

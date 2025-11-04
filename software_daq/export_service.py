@@ -169,7 +169,7 @@ class ExportService(metaclass=Singleton):
         try:
             with open(self.matrixScanPath, "w") as file:
                 # Personalizza l'intestazione secondo i dati della matrice
-                header = "row\tcol\ttot_avg\ttot_std\ttoa_avg\ttoa_std\tefficiency_tot\tefficiency_toa\n"
+                header = "row\tcol\tvoltage\ttot_avg\ttot_std\ttoa_avg\ttoa_std\tefficiency_tot\tefficiency_toa\n"
                 file.write(header)
             print(f"File '{file_name}' creato in: {self.directory}")
         except Exception as e:
@@ -190,9 +190,11 @@ class ExportService(metaclass=Singleton):
         
         full_content = ""
         try:
-            for row_data in data_rows:
+            # Salta il primo elemento della lista (non si modifica l'array originale)
+            for row_data in data_rows[1:]:
                 row = row_data['row']
                 col = row_data['col']
+                voltage = row_data['voltage']
                 tot_avg = row_data['tot_avg']
                 tot_std = row_data['tot_std']
                 toa_avg = row_data['toa_avg']
@@ -201,7 +203,7 @@ class ExportService(metaclass=Singleton):
                 efficiency_toa = row_data['efficiency_toa']
                 
                 line = (
-                    f"{row}\t{col}\t{round(tot_avg, 3)}\t{round(tot_std, 3)}\t"
+                    f"{row}\t{col}\t{voltage}\t{round(tot_avg, 3)}\t{round(tot_std, 3)}\t"
                     f"{round(toa_avg, 3)}\t{round(toa_std, 3)}\t{round(efficiency_tot, 3)}\t{round(efficiency_toa, 3)}\n"
                 )
                 full_content += line
