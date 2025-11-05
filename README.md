@@ -1,6 +1,9 @@
 # falaphel3-daq
 Codebase for the firmware and software DAQ system of the FALAPHEL3 chip
 
+### Diagamma UML
+
+![alt text](image.png)
 
 The system is composed of the motherboard that hosts the chip, glued and wire-bonded to a daughter board. 
 The motherboard is responsible to manage the DC levels, powering and communication to the FPGA, which is used to program the digital part of the chip through SPI interface.
@@ -143,3 +146,5 @@ Per leggere il tot devo inviare il comando subito dopo l'iniezione: ```110000000
 
 
 ### Per leggere il TOA: "000" & valid TOA (1 bit) & TOA value (8 bits)
+
+
