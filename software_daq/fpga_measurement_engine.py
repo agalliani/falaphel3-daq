@@ -151,6 +151,8 @@ class FpgaMeasurementEngine:
             except Exception as e:
                 print(f"Warning: Could not turn off Power Supply: {e}")
 
+
+### METODI DI INIEZIONE E SWEEP PIXEL ###
    
     def _inject_a_pixel(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
@@ -243,7 +245,11 @@ class FpgaMeasurementEngine:
 
                     remaining = num_injections
                     while remaining > 0:
+
+                        # Iniezione singolo pixel
                         tot_value, toa_value = self._inject_a_pixel(pixel_x, pixel_y, binary_command_params, ser_int)
+                        time.sleep(0.001)
+
                         
                         # Gestione dei risultati e retry/decremento (Logica di elaborazione)
                         if math.isnan(tot_value) and math.isnan(toa_value):
