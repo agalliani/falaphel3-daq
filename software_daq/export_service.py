@@ -57,7 +57,7 @@ class ExportService(metaclass=Singleton):
         """
         suffix_parts = []
         # boolean flags
-        for key in ["cap50", "cap25", "cap_csa_load", "t_up"]:
+        for key in ["cap50", "cap25", "cap_csa_load", "t_up", "x", "y"]:
             if config.get(key, 0) != 0:
                 suffix_parts.append(f"_{key}")
         # multi-bit

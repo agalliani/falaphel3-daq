@@ -208,7 +208,7 @@ class FpgaControlApp:
                 'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
                 'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
                 'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
-                'out_en': self.config_out_en.get()
+                'out_en': self.config_out_en.get(), 'x': self.inj_pixel_x.get(), 'y': self.inj_pixel_y.get()
             }
 
             binary_command_params = {
