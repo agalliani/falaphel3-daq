@@ -283,23 +283,25 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error during matrix injection scan: {e}")
 
+
     def _scan_sub_matrix_injection(self):
-        """Scansiona una sotto-matrice definita dai parametri."""
+        """Prepara i parametri della sotto-matrice e delega all'Engine."""
         try:
             port = self.port_entry.get()
-            baud = int(self.baud_entry.get())       
-            # Parametri per lo sweep della tensione (usati anche per la scansione)
+            baud = int(self.baud_entry.get())
+            
+            # Parametri della Sotto-Matrice
+            start_x = self.sub_matrix_start_x.get()
+            start_y = self.sub_matrix_start_y.get()
+            width = self.sub_matrix_width.get()
+            height = self.sub_matrix_height.get()
+
+            # Parametri di Sweep (Tensione)
             sweep_params= {
                 'start_v': self.sweep_start_v.get(), 'end_v': self.sweep_end_v.get(), 
                 'step_v': self.sweep_step_v.get(), 'num_injections': self.num_injections.get(),
-                # In uno sweep di matrice, questi sono i parametri di scansione
-                'start_x': self.sub_matrix_start_x.get(), 
-                'start_y': self.sub_matrix_start_y.get(),
-                'width': self.sub_matrix_width.get(), 
-                'height': self.sub_matrix_height.get()
+                'pixel_x': 0, 'pixel_y': 0 # Questi saranno sovrascritti nell'Engine
             }
-
-            # Parametri di configurazione del pixel (presi dalla sezione di iniezione)
             pixel_config_params = {
                 'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
                 'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
@@ -312,24 +314,21 @@ class FpgaControlApp:
                 'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
             }
 
-            # Per implementare la scansione della sotto-matrice, dovrai passare
-            # questi nuovi parametri (start_x, start_y, width, height) al tuo Engine.
-            # Assumiamo che l'Engine abbia un metodo unificato 'perform_matrix_scan' 
-            # che gestisce le coordinate fornite.
 
-            # NOTA: La chiamata all'Engine qui sotto deve essere adattata per inviare
-            # i parametri della sotto-matrice (start_x/y, width/height) che ho aggiunto
-            # direttamente a 'sweep_params'
-
-            total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+            # CHIAMA IL NUOVO METODO perform_sub_matrix_scan
+            total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
                 port=port,
                 baud=baud,
-                sweep_params=sweep_params, # Contiene ora i parametri della sotto-matrice
+                sweep_params=sweep_params,
                 timing_injection_settings=injection_timing_settings,
-                pixel_config_params=pixel_config_params
-                )
-
-            messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully in {total_time:.2f} seconds. Size: {sweep_params['width']}x{sweep_params['height']}. Data saved to file.")
+                pixel_config_params=pixel_config_params,
+                start_x=start_x,
+                start_y=start_y,
+                width=width,
+                height=height
+            )
+            
+            messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully in {total_time:.2f} seconds. Size: {width}x{height}. Data saved to file.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")

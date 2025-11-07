@@ -489,3 +489,128 @@ class FpgaMeasurementEngine:
         except Exception as e:
             raise RuntimeError(f"Failed to create matrix scan export file: {e}")
 
+
+
+    def perform_sub_matrix_scan(self, port: str, baud: int, sweep_params: Dict[str, int], timing_injection_settings: Dict[str, int],
+                                    pixel_config_params: Dict[str, int], start_x: int, start_y: int, width: int, height: int) -> Dict[str, Any]:
+            """
+            Esegue la scansione di una sotto-matrice definita dai parametri start_x, start_y, width, height.
+            Per ogni pixel, esegue un perform_sweep completo.
+    
+            Args:
+                start_x: Colonna di partenza (inclusa).
+                start_y: Riga di partenza (inclusa).
+                width: Larghezza della sotto-matrice.
+                height: Altezza della sotto-matrice.
+                
+            Returns:
+                Dizionario con statistiche dello scan.
+            """
+            
+            # --- 1. Determina i limiti della scansione ---
+            end_x = start_x + width
+            end_y = start_y + height
+            
+            # Gestisce i limiti del chip (0-31 per X, 0-7 per Y)
+            if end_x > 32 or end_y > 8 or start_x < 0 or start_y < 0 or width <= 0 or height <= 0:
+                raise ValueError(f"I limiti della scansione ({start_x},{start_y}) a dimensione {width}x{height} sono non validi o eccedono le dimensioni della matrice (32x8).")
+    
+            total_pixels = width * height
+    
+            # --- 2. Generazione dei comandi SPI/ASIC (Impostazioni fisse) ---
+            pad_word = self.asic_config.get_init_pad_string()
+            config_pixel_word = self.asic_config.get_config_pointed_pixel(
+                cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
+                cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
+                t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+            )
+            inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
+                bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=1
+            )
+            inj_word1_stop, inj_word2_stop = self.asic_config.get_injection_settings(
+                bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=0
+            )
+            tot_request = self.asic_config.get_save_tot_command()
+            toa_request = self.asic_config.get_save_toa_command()
+    
+            
+            print(f"Starting Sub-Matrix scan: {width}x{height} pixels ({total_pixels} total), starting at ({start_x}, {start_y})")
+            print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
+            print(f"Injections per voltage: {sweep_params['num_injections']}")
+            
+            # --- 3. Esecuzione della scansione e raccolta dati ---
+            try:
+                # Creiamo il file una sola volta
+                self.exporter.create_matrix_scan_file(pixel_config_params)
+            
+                scan_start_time = time.time()
+                pixel_times = []
+                failed_pixels = []
+                
+                # I loop for ora utilizzano i limiti dinamici
+                for y in range(start_y, end_y):
+                    for x in range(start_x, end_x):
+                        pixel_num_y = y - start_y
+                        pixel_num_x = x - start_x
+                        pixel_num_total = pixel_num_y * width + pixel_num_x + 1
+                        
+                        print(f"\n{'='*60}")
+                        print(f"Processing pixel {pixel_num_total}/{total_pixels}: Absolute X={x}, Y={y}")
+                        print(f"{'='*60}")
+                        
+                        # Aggiorna i parametri per il pixel corrente
+                        current_sweep_params = sweep_params.copy()
+                        current_sweep_params['pixel_x'] = x  # Coordinate assolute
+                        current_sweep_params['pixel_y'] = y
+                        
+                        current_pixel_config = pixel_config_params.copy()
+                        current_pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=x, y_3b=y)
+                        
+                        # Build binary_command_params for the current pixel
+                        current_binary_commands = {
+                            'pad_word': pad_word,
+                            'pointer_word': current_pointer_word,
+                            'config_pixel_word': config_pixel_word,
+                            'inj_word1_start': inj_word1_start,
+                            'inj_word2_start': inj_word2_start,
+                            'inj_word1_stop': inj_word1_stop,
+                            'inj_word2_stop': inj_word2_stop,
+                            'tot_request': tot_request,
+                            'toa_request': toa_request
+                        }
+                        try:
+                            elapsed = self.perform_sweep(
+                                port, baud, current_sweep_params, 
+                                current_binary_commands, current_pixel_config, isMatrixScan=True
+                            )
+                            pixel_times.append(elapsed)
+                            time.sleep(0.5)  # Breve pausa tra i pixel
+                            print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
+                        except Exception as e:
+                            print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
+                            failed_pixels.append((x, y))
+                            continue
+                        
+                scan_end_time = time.time()
+                
+                # --- 4. Statistiche finali ---
+                total_scan_time = scan_end_time - scan_start_time
+                successful_pixels = total_pixels - len(failed_pixels)
+                avg_pixel_time = statistics.mean(pixel_times) if pixel_times else 0.0
+                
+                scan_stats = {
+                    'total_pixels': total_pixels,
+                    'successful_pixels': successful_pixels,
+                    'failed_pixels': failed_pixels,
+                    'total_time': total_scan_time,
+                    'avg_time_per_pixel': avg_pixel_time
+                }
+                
+                print(f"\n{'='*60}")
+                print(f"SUB-MATRIX SCAN COMPLETED")
+                print(f"Matrix: ({start_x},{start_y}) to ({end_x-1},{end_y-1}) - Size {width}x{height}")
+                print(f"Total time: {total_scan_time:.2f}s")
+                return scan_stats
+            
+            except Exception as e:
+                raise RuntimeError(f"Error during sub-matrix scan procedure: {e}")

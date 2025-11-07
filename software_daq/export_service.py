@@ -146,7 +146,7 @@ class ExportService(metaclass=Singleton):
 
 
     
-    def create_matrix_scan_file(self, config):
+    def create_matrix_scan_file(self, config, is_submatrix: bool = False):
         """
         Crea un file per i dati dello scan della matrice.
         config: dict con le configurazioni (interi)
@@ -163,6 +163,8 @@ class ExportService(metaclass=Singleton):
             suffix_parts.append(f"_dacth_{dac_th}")
         suffix_string = "".join(suffix_parts)
         timestamp = time.strftime("%y%m%d_%H%M%S")
+        if is_submatrix:
+            suffix_string += "_submatrix"
         file_name = f"export_matrix_scan_{timestamp}{suffix_string}.tsv"
         target_path = self.directory / file_name
         self.matrixScanPath = target_path
