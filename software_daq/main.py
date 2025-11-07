@@ -79,6 +79,12 @@ class FpgaControlApp:
         self.config_t_up = tk.IntVar(value=0)
         self.config_out_en = tk.IntVar(value=1)
 
+        # VARIABILI PER LA SOTTOMATRICE SCAN
+        self.sub_matrix_start_x = tk.IntVar(value=0) # Vertice in alto a sinistra X
+        self.sub_matrix_start_y = tk.IntVar(value=0) # Vertice in alto a sinistra Y
+        self.sub_matrix_width = tk.IntVar(value=32)  # Larghezza (colonne)
+        self.sub_matrix_height = tk.IntVar(value=8) # Altezza (righe)
+
         # 4. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
 
@@ -277,6 +283,61 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error during matrix injection scan: {e}")
 
+    def _scan_sub_matrix_injection(self):
+        """Scansiona una sotto-matrice definita dai parametri."""
+        try:
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())       
+            # Parametri per lo sweep della tensione (usati anche per la scansione)
+            sweep_params= {
+                'start_v': self.sweep_start_v.get(), 'end_v': self.sweep_end_v.get(), 
+                'step_v': self.sweep_step_v.get(), 'num_injections': self.num_injections.get(),
+                # In uno sweep di matrice, questi sono i parametri di scansione
+                'start_x': self.sub_matrix_start_x.get(), 
+                'start_y': self.sub_matrix_start_y.get(),
+                'width': self.sub_matrix_width.get(), 
+                'height': self.sub_matrix_height.get()
+            }
+
+            # Parametri di configurazione del pixel (presi dalla sezione di iniezione)
+            pixel_config_params = {
+                'cap25': self.config_cap25.get(), 'dac_th': self.config_dac_th.get(), 
+                'test_en': self.config_test_en.get(), 'cap50': self.config_cap50.get(),
+                'cap_csa_load': self.config_cap_csa_load.get(), 't_up': self.config_t_up.get(), 
+                'out_en': self.config_out_en.get()
+            }
+            
+            injection_timing_settings = {
+                'bypass': self.inj_bypass.get(), 'period': self.inj_period.get(),
+                'burst': self.inj_burst.get(), 'duty': self.inj_duty.get()
+            }
+
+            # Per implementare la scansione della sotto-matrice, dovrai passare
+            # questi nuovi parametri (start_x, start_y, width, height) al tuo Engine.
+            # Assumiamo che l'Engine abbia un metodo unificato 'perform_matrix_scan' 
+            # che gestisce le coordinate fornite.
+
+            # NOTA: La chiamata all'Engine qui sotto deve essere adattata per inviare
+            # i parametri della sotto-matrice (start_x/y, width/height) che ho aggiunto
+            # direttamente a 'sweep_params'
+
+            total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+                port=port,
+                baud=baud,
+                sweep_params=sweep_params, # Contiene ora i parametri della sotto-matrice
+                timing_injection_settings=injection_timing_settings,
+                pixel_config_params=pixel_config_params
+                )
+
+            messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully in {total_time:.2f} seconds. Size: {sweep_params['width']}x{sweep_params['height']}. Data saved to file.")
+
+        except ValueError as e:
+            messagebox.showerror("Input Error", f"Error in input values: {e}")
+        except RuntimeError as e:
+            messagebox.showerror("Service Error", f"{e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error during sub-matrix injection scan: {e}")
+
     # --- WIDGET E LAYOUT ---
     def _create_widgets(self):
         """Costruisce tutti i widget della GUI (Identico al codice originale, aggiornati solo i comandi)."""
@@ -344,15 +405,33 @@ class FpgaControlApp:
         tk.Button(frame_inj, text="Start Injection Sweep", command=self._sweep_pixel_injection_opt, bg="light green").grid(row=9, column=0, columnspan=4, pady=10)
         
         # --- Sezione Scansione Matrice ---
-        frame_matrix = ttk.LabelFrame(self.master, text="Matrix Scan")
+        frame_matrix = ttk.LabelFrame(self.master, text="Matrix Scan Settings")
         frame_matrix.grid(row=3, column=2, padx=10, pady=10, sticky="nsew")
 
-        tk.Label(frame_matrix, text="Matrix Scan Settings", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2, pady=5)
+        tk.Label(frame_matrix, text="Full Scan (32x8)", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=2, pady=5)
         tk.Label(frame_matrix, text="Uses sweep and pixel config", font=("Arial", 8, "italic")).grid(row=1, column=0, columnspan=2, pady=2)
         tk.Label(frame_matrix, text="from left section").grid(row=2, column=0, columnspan=2, pady=2)
 
-        tk.Button(frame_matrix, text="Start Matrix Scan", command=self._scan_matrix_injection, bg="orange", font=("Arial", 10, "bold")).grid(row=3, column=0, columnspan=2, pady=20, padx=10, sticky="ew")
+        tk.Button(frame_matrix, text="Start Full Matrix Scan", command=self._scan_matrix_injection, bg="orange", font=("Arial", 10, "bold")).grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
 
+        # --- Sotto-sezione Sotto-Matrice ---
+        frame_sub_matrix = ttk.LabelFrame(frame_matrix, text="Sub-Matrix Scan")
+        frame_sub_matrix.grid(row=4, column=0, columnspan=2, padx=5, pady=10, sticky="ew")
+
+        # Input Vertice (Start X, Start Y)
+        tk.Label(frame_sub_matrix, text="Start X (0-31):").grid(row=0, column=0, padx=5, sticky="w")
+        tk.Spinbox(frame_sub_matrix, textvariable=self.sub_matrix_start_x, from_=0, to=31, width=5).grid(row=0, column=1, padx=5, sticky="ew")
+        tk.Label(frame_sub_matrix, text="Start Y (0-7):").grid(row=1, column=0, padx=5, sticky="w")
+        tk.Spinbox(frame_sub_matrix, textvariable=self.sub_matrix_start_y, from_=0, to=7, width=5).grid(row=1, column=1, padx=5, sticky="ew")
+
+        # Input Dimensioni (Width, Height)
+        tk.Label(frame_sub_matrix, text="Width (1-32):").grid(row=0, column=2, padx=5, sticky="w")
+        tk.Spinbox(frame_sub_matrix, textvariable=self.sub_matrix_width, from_=1, to=32, width=5).grid(row=0, column=3, padx=5, sticky="ew")
+        tk.Label(frame_sub_matrix, text="Height (1-8):").grid(row=1, column=2, padx=5, sticky="w")
+        tk.Spinbox(frame_sub_matrix, textvariable=self.sub_matrix_height, from_=1, to=8, width=5).grid(row=1, column=3, padx=5, sticky="ew")
+
+        # Bottone Sotto-Matrice Scan
+        tk.Button(frame_sub_matrix, text="Start Sub-Matrix Scan", command=self._scan_sub_matrix_injection, bg="gold", font=("Arial", 10, "bold")).grid(row=2, column=0, columnspan=4, pady=10, padx=5, sticky="ew")
 # ============================================================================== 
 # MAIN
 # ============================================================================== 
