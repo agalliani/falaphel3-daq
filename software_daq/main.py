@@ -61,7 +61,7 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
 
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=80)   # Tensione di partenza in mV
+        self.sweep_start_v = tk.IntVar(value=100)   # Tensione di partenza in mV
         self.sweep_end_v = tk.IntVar(value=30)     # Tensione di fine in mV
         self.sweep_step_v = tk.IntVar(value=3)     # Step di tensione in mV
         self.num_injections = tk.IntVar(value=31) # Numero di iniezioni per step
@@ -80,10 +80,10 @@ class FpgaControlApp:
         self.config_out_en = tk.IntVar(value=1)
 
         # VARIABILI PER LA SOTTOMATRICE SCAN
-        self.sub_matrix_start_x = tk.IntVar(value=0) # Vertice in alto a sinistra X
-        self.sub_matrix_start_y = tk.IntVar(value=0) # Vertice in alto a sinistra Y
-        self.sub_matrix_width = tk.IntVar(value=32)  # Larghezza (colonne)
-        self.sub_matrix_height = tk.IntVar(value=8) # Altezza (righe)
+        self.sub_matrix_start_x = tk.IntVar(value=4) # Vertice in alto a sinistra X
+        self.sub_matrix_start_y = tk.IntVar(value=3) # Vertice in alto a sinistra Y
+        self.sub_matrix_width = tk.IntVar(value=8)  # Larghezza (colonne)
+        self.sub_matrix_height = tk.IntVar(value=4) # Altezza (righe)
 
         # 4. CREAZIONE DELL'INTERFACCIA UTENTE
         self._create_widgets()
