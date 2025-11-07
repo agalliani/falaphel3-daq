@@ -57,14 +57,17 @@ class FpgaMeasurementEngine:
     def _send_spi_word(self, ser_int: SerialInterface, word_value: int) -> bytes:
         """Funzione helper per inviare una singola parola di configurazione SPI."""
         # Inizializzazione SPI (avviene solo al primo accesso)
-        if not self.spi_initialized:
-            print("First access to SPI, performing initialization")
+        #if not self.spi_initialized:
+        #    print("First access to SPI, performing initialization")
             # 1) SPI Init: Write VAL_SPI_INIT_1 to REG_SPI_INIT_1
-            ser_int.write_register(REG_SPI_INIT_1, VAL_SPI_INIT_1)
+        #    ser_int.write_register(REG_SPI_INIT_1, VAL_SPI_INIT_1)
             # 2) SPI Init: Write VAL_SPI_INIT_2 to REG_SPI_INIT_2
-            ser_int.write_register(REG_SPI_INIT_2, VAL_SPI_INIT_2)
-            self.spi_initialized = True
-            print("SPI initialization complete")
+        #    ser_int.write_register(REG_SPI_INIT_2, VAL_SPI_INIT_2)
+        #    self.spi_initialized = True
+        #    print("SPI initialization complete")
+        ser_int.write_register(REG_SPI_INIT_1, VAL_SPI_INIT_1)
+        ser_int.write_register(REG_SPI_INIT_2, VAL_SPI_INIT_2)
+
 
         # 3) SPI CTRL Clear: Write VAL_SPI_CTRL_CLEAR to REG_SPI_CTRL
         ser_int.write_register(REG_SPI_CTRL, VAL_SPI_CTRL_CLEAR)
