@@ -541,7 +541,7 @@ class FpgaMeasurementEngine:
             # --- 3. Esecuzione della scansione e raccolta dati ---
             try:
                 # Creiamo il file una sola volta
-                self.exporter.create_matrix_scan_file(pixel_config_params)
+                self.exporter.create_matrix_scan_file(pixel_config_params, is_submatrix=True)
             
                 scan_start_time = time.time()
                 pixel_times = []
