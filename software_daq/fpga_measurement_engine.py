@@ -219,6 +219,9 @@ class FpgaMeasurementEngine:
         try:
             # 1. Inizializzazione file di esportazione
             if isMatrixScan == False:
+                pixel_config_params = pixel_config_params.copy()
+                pixel_config_params['pixel_x'] = pixel_x
+                pixel_config_params['pixel_y'] = pixel_y
                 self.exporter.create_falaphel_file(pixel_config_params)
 
             # 2. Connessione e preparazione power supply
