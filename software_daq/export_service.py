@@ -57,7 +57,7 @@ class ExportService(metaclass=Singleton):
         """
         suffix_parts = []
         # boolean flags
-        for key in ["cap50", "cap25", "cap_csa_load", "t_up", "x", "y"]:
+        for key in ["cap50", "cap25", "cap_csa_load", "t_up"]:
             if config.get(key, 0) != 0:
                 suffix_parts.append(f"_{key}")
         # multi-bit
@@ -66,7 +66,7 @@ class ExportService(metaclass=Singleton):
             suffix_parts.append(f"_dacth_{dac_th}")
         suffix_string = "".join(suffix_parts)
         timestamp = time.strftime("%y%m%d_%H%M%S")
-        file_name = f"data_falaphel_prin_{timestamp}{suffix_string}.tsv"
+        file_name = f"data_falaphel_prin_{timestamp}{suffix_string}_x_{str(config.get('pixel_x', 0))}_y_{str(config.get('pixel_y', 0))}.tsv"
         target_path = self.directory / file_name
         self.falaphelPath = target_path
         try:

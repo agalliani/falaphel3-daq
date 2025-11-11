@@ -67,8 +67,8 @@ class FpgaControlApp:
         self.num_injections = tk.IntVar(value=31) # Numero di iniezioni per step
 
         # Variabili per l'iniezione su singolo pixel
-        self.inj_pixel_x = tk.IntVar(value=5)
-        self.inj_pixel_y = tk.IntVar(value=5)
+        self.inj_pixel_x = tk.IntVar(value=0)
+        self.inj_pixel_y = tk.IntVar(value=0)
 
         # VARIABILI PER LA CONFIGURAZIONE DEL PIXEL
         self.config_cap50 = tk.IntVar(value=1)
