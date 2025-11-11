@@ -80,9 +80,9 @@ class FpgaControlApp:
         self.config_out_en = tk.IntVar(value=1)
 
         # VARIABILI PER LA SOTTOMATRICE SCAN
-        self.sub_matrix_start_x = tk.IntVar(value=4) # Vertice in alto a sinistra X
+        self.sub_matrix_start_x = tk.IntVar(value=3) # Vertice in alto a sinistra X
         self.sub_matrix_start_y = tk.IntVar(value=3) # Vertice in alto a sinistra Y
-        self.sub_matrix_width = tk.IntVar(value=8)  # Larghezza (colonne)
+        self.sub_matrix_width = tk.IntVar(value=10)  # Larghezza (colonne)
         self.sub_matrix_height = tk.IntVar(value=4) # Altezza (righe)
 
         # 4. CREAZIONE DELL'INTERFACCIA UTENTE
@@ -328,7 +328,7 @@ class FpgaControlApp:
                 height=height
             )
             
-            messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully in {total_time:.2f} seconds. Size: {width}x{height}. Data saved to file.")
+            messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully. Size: {width}x{height}. Data saved to file.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")
