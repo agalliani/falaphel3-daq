@@ -9,17 +9,22 @@ import statistics
 
 
 # ============================================================================== 
-# COSTANTI REGISTRI FPGA/SPI (Spostate fuori dalla GUI)
+# COSTANTI REGISTRI FPGA/SPI
 # ============================================================================== 
 REG_SPI_DATA = 0x30000
 REG_SPI_CTRL = 0x30010
 REG_SPI_INIT_1 = 0x30014
 REG_SPI_INIT_2 = 0x30018
+REG_RESETN = 0x60000
 
 VAL_SPI_INIT_1 = 0xF
 VAL_SPI_INIT_2 = 0x1
 VAL_SPI_CTRL_CLEAR = 0x2214
 VAL_SPI_CTRL_SET = 0x2314
+VAL_RESETN_ASSERT = 0x1 # Per attivare il segnale resetn basta che fai un accesso in scrittura all'indirizzo 0x60000 (con qualunque valore).
+
+
+
 
 # ============================================================================== 
 # CLASSE LOGICA: GESTIONE MISURE E I/O (FpgaMeasurementEngine)
@@ -53,6 +58,11 @@ class FpgaMeasurementEngine:
             raise ValueError(f"Baudrate non valido: {e}")
 
     # --- METODI DI BASSO LIVELLO (I/O) ---
+
+    def _send_resetn(self, ser_int: SerialInterface):
+        """Invia il comando di resetn all'FPGA."""
+        ser_int.write_register(REG_RESETN, VAL_RESETN_ASSERT)
+        
 
     def _send_spi_word(self, ser_int: SerialInterface, word_value: int) -> bytes:
         """Funzione helper per inviare una singola parola di configurazione SPI."""

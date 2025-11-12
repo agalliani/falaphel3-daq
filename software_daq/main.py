@@ -337,6 +337,19 @@ class FpgaControlApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error during sub-matrix injection scan: {e}")
 
+
+    def _send_reset_gui(self):
+        """Invia il comando di resetn all'FPGA tramite l'Engine."""
+        try:
+            port = self.port_entry.get()
+            baud = int(self.baud_entry.get())
+            
+            response = self.engine.send_resetn_command(port, baud)
+            self.result_var.set(response)
+            print("Success", "Resetn command sent to FPGA.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Resetn command error: {e}")
+
     # --- WIDGET E LAYOUT ---
     def _create_widgets(self):
         """Costruisce tutti i widget della GUI (Identico al codice originale, aggiornati solo i comandi)."""
@@ -347,6 +360,16 @@ class FpgaControlApp:
         tk.Entry(frame_conn, textvariable=self.port_entry).grid(row=0, column=1, padx=5, pady=2, sticky="ew")
         tk.Label(frame_conn, text="Baudrate:").grid(row=1, column=0, padx=5, pady=2, sticky="w")
         tk.Entry(frame_conn, textvariable=self.baud_entry).grid(row=1, column=1, padx=5, pady=2, sticky="ew")
+
+        # --- Bottone RESETN in alto a destra ---
+        tk.Button(
+            self.master, 
+            text="Send Resetn", 
+            command=self._send_reset_gui, 
+            bg="#ff6666", 
+            fg="white", 
+            font=("Arial", 10, "bold")
+        ).grid(row=0, column=2, padx=10, pady=10, sticky="ew") # Posizione: Riga 0, Colonna 2
 
         # --- Sezione Comandi Singoli ---
         frame_single = ttk.LabelFrame(self.master, text="Single Commands Section")
