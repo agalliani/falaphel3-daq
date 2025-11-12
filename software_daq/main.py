@@ -344,7 +344,7 @@ class FpgaControlApp:
             port = self.port_entry.get()
             baud = int(self.baud_entry.get())
             
-            response = self.engine.send_resetn_command(port, baud)
+            response = self.engine._send_resetn(port, baud)
             self.result_var.set(response)
             print("Success", "Resetn command sent to FPGA.")
         except Exception as e:
