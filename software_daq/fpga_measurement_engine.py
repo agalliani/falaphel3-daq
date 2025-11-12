@@ -59,10 +59,10 @@ class FpgaMeasurementEngine:
 
     # --- METODI DI BASSO LIVELLO (I/O) ---
 
-    def _send_resetn(self, ser_int: SerialInterface):
-        """Invia il comando di resetn all'FPGA."""
-        ser_int.write_register(REG_RESETN, VAL_RESETN_ASSERT)
-        
+    def _send_resetn(self, port: str, baud: int):
+        with self._get_serial_interface(port, baud) as ser_int:
+            """Invia il comando di resetn all'FPGA."""
+            ser_int.write_register(REG_RESETN, VAL_RESETN_ASSERT)
 
     def _send_spi_word(self, ser_int: SerialInterface, word_value: int) -> bytes:
         """Funzione helper per inviare una singola parola di configurazione SPI."""
@@ -173,6 +173,9 @@ class FpgaMeasurementEngine:
 
         # 2. Sequenza di comunicazione
         try:
+            # proviamo  a resettare prima dell'iniezione
+            #ser_int.write_register(REG_RESETN, VAL_RESETN_ASSERT)
+
             # Sequenza di configurazione pixel
             self._send_spi_word(ser_int, binary_command_params["pad_word"])
             self._send_spi_word(ser_int, binary_command_params["pointer_word"])
@@ -190,6 +193,8 @@ class FpgaMeasurementEngine:
             # 3. Elabora risultati
             tot_value = self.asic_config.elaborate_received_tot(tot_response_raw)
             toa_value = self.asic_config.elaborate_received_toa(toa_response_raw)
+
+
             
             return tot_value, toa_value
         except Exception as e:
