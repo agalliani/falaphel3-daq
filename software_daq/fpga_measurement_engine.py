@@ -150,10 +150,12 @@ class FpgaMeasurementEngine:
             raise RuntimeError("Power Supply Service non disponibile.")
             
         # Canale 2 del power supply fisso a 0V 
-        self.ps_service.set_channel_voltage(channel=2, voltage=0.0)
-        self.ps_service.set_channel_current(channel=2, current=0.1)
-        self.ps_service.output_on(channel=2)
+        #self.ps_service.set_channel_voltage(channel=2, voltage=0.0)
+        #self.ps_service.set_channel_current(channel=2, current=0.1)
+        #self.ps_service.output_on(channel=2)
         self.ps_service.set_channel_current(channel=1, current=0.1)
+        self.ps_service.set_channel_voltage(channel=1, voltage=0.3)
+        self.ps_service.output_on(channel=1)
 
     def _shutdown_power_supply(self):
         """Spegne il canale 1 del Power Supply."""
@@ -251,9 +253,11 @@ class FpgaMeasurementEngine:
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
             
             start_time = time.time()
-            
+            self.ps_service.output_on(channel=1)
             # *** Ottimizzazione principale: apro la connessione seriale UNA SOLA VOLTA ***
             with self._get_serial_interface(port, baud) as ser_int:
+
+                self._send_resetn(port, baud)  # Reset FPGA prima dello sweep
 
                 for voltage in voltages:
                     tot_results: List[float] = []
@@ -262,7 +266,7 @@ class FpgaMeasurementEngine:
                     
                     # Imposta la tensione e accendi
                     self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
-                    self.ps_service.output_on(channel=1)
+                    #self.ps_service.output_on(channel=1)
 
                     remaining = num_injections
                     while remaining > 0:
@@ -347,7 +351,8 @@ class FpgaMeasurementEngine:
             print(f"FATAL: Error during pixel injection sweep: {e}")
         finally:
             # Safe to call even if ps_service was never initialized or connected, due to internal check in _shutdown_power_supply.
-            self._shutdown_power_supply() # Assicurati che l'alimentazione sia spenta
+            print("fine sweep")
+            #self._shutdown_power_supply() # Assicurati che l'alimentazione sia spenta
 
 
     def perform_matrix_scan(self, port: str, baud: int, sweep_params: Dict[str, int], timing_injection_settings: Dict[str, int],
