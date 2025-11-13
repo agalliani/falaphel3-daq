@@ -471,7 +471,7 @@ class FpgaMeasurementEngine:
                             current_binary_commands, current_pixel_config, isMatrixScan=True
                         )
                         pixel_times.append(elapsed)
-                        time.sleep(5)  # Breve pausa tra i pixel
+                        time.sleep(1)  # Breve pausa tra i pixel
                         print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
                     except Exception as e:
                         print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
