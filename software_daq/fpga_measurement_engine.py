@@ -64,6 +64,8 @@ class FpgaMeasurementEngine:
             """Invia il comando di resetn all'FPGA."""
             ser_int.write_register(REG_RESETN, VAL_RESETN_ASSERT)
 
+    
+
     def _send_spi_word(self, ser_int: SerialInterface, word_value: int) -> bytes:
         """Funzione helper per inviare una singola parola di configurazione SPI."""
         # Inizializzazione SPI (avviene solo al primo accesso)
@@ -241,9 +243,7 @@ class FpgaMeasurementEngine:
                 pixel_config_params['pixel_y'] = pixel_y
                 self.exporter.create_falaphel_file(pixel_config_params)
 
-            # 2. Connessione e preparazione power supply
-            self.connect_power_supply() # Usa l'iniezione per connettersi
-            self._prepare_power_supply_for_sweep() 
+
             
             # 3. Genera la lista di tensioni
             sweep_step = -step if start_voltage > end_voltage else step
@@ -257,7 +257,8 @@ class FpgaMeasurementEngine:
             # *** Ottimizzazione principale: apro la connessione seriale UNA SOLA VOLTA ***
             with self._get_serial_interface(port, baud) as ser_int:
 
-                self._send_resetn(port, baud)  # Reset FPGA prima dello sweep
+                ser_int.write_register(REG_RESETN, VAL_RESETN_ASSERT)
+
 
                 for voltage in voltages:
                     tot_results: List[float] = []
@@ -476,7 +477,7 @@ class FpgaMeasurementEngine:
                             current_binary_commands, current_pixel_config, isMatrixScan=True
                         )
                         pixel_times.append(elapsed)
-                        time.sleep(1)  # Breve pausa tra i pixel
+                        time.sleep(0.5)  # Breve pausa tra i pixel
                         print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
                     except Exception as e:
                         print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
@@ -604,7 +605,7 @@ class FpgaMeasurementEngine:
                                 current_binary_commands, current_pixel_config, isMatrixScan=True
                             )
                             pixel_times.append(elapsed)
-                            time.sleep(0.5)  # Breve pausa tra i pixel
+                            #time.sleep(0.5)  # Breve pausa tra i pixel
                             print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
                         except Exception as e:
                             print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
