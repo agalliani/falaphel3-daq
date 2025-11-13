@@ -126,7 +126,7 @@ class ExportService(metaclass=Singleton):
                 efficiency_tot = row_data['efficiency_tot']
                 efficiency_toa = row_data['efficiency_toa']
                 
-                # Formatta la riga (come nel tuo metodo originale)
+                # Formatta la riga
                 row = (
                     f"{round(voltage, 3)}\t{round(tot_avg, 3)}\t{round(tot_std, 3)}\t"
                     f"{round(toa_avg, 3)}\t{round(toa_std, 3)}\t{round(efficiency_tot, 3)}\t{round(efficiency_toa, 3)}\n"

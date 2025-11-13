@@ -333,7 +333,7 @@ class FpgaMeasurementEngine:
 
             else:
                 print("Matrix scan pixel data collected")
-                self.exporter.write_matrix_scan_data_bulk([{**data_row, 'row': pixel_y, 'col': pixel_x} for data_row in all_sweep_data])
+                self.exporter.write_matrix_scan_data_bulk([{**data_row, 'row': pixel_x, 'col': pixel_y} for data_row in all_sweep_data])
 
 
             end_time = time.time()

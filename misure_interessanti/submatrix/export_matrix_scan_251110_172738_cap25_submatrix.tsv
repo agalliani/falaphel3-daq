@@ -1,4 +1,4 @@
-row	col	voltage	tot_avg	tot_std	toa_avg	toa_std	efficiency_tot	efficiency_toa
+col	row	voltage	tot_avg	tot_std	toa_avg	toa_std	efficiency_tot	efficiency_toa
 3	3	100	5.032	0.18	11.742	0.445	1.0	1.0
 3	3	97	4.968	0.18	11.903	0.301	1.0	1.0
 3	3	94	4.806	0.402	11.968	0.18	1.0	1.0
