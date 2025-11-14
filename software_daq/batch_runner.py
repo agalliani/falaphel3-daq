@@ -56,9 +56,7 @@ class BatchRunner:
         for i, task in enumerate(tasks_list):
 
             task_name = f"Task {i+1}/{len(tasks_list)}: {task['name']}"
-            # Aggiorna la descrizione/titolo della progress bar *prima* di avanzarla
-            self.progress.update(task_main, advance=1, description=task_name)
-            # L'ID del task deve essere passato, che è task_main, non la stringa "Batch tasks"
+            self.progress.update("Batch tasks", description=task_name, advance=1) 
 
             op = task["operation"]
 

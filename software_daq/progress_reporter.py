@@ -11,9 +11,13 @@ class ProgressReporter:
         self.tasks[name] = task_id
         return task_id
 
-    def update(self, name: str, advance: int = 1):
+    # --- MODIFICA QUI ---
+    def update(self, name: str, advance: int = 1, description: str = None):
+        """Aggiorna l'avanzamento del task e la sua descrizione."""
         task_id = self.tasks[name]
-        self.progress.update(task_id, advance=advance)
+        
+        # Passa advance E description al metodo update di rich
+        self.progress.update(task_id, advance=advance, description=description)
 
     def stop(self):
         self.progress.stop()
