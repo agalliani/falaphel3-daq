@@ -10,16 +10,17 @@ class BatchRunner:
     def __init__(self):
         # Inizializza l'attributo engine a None o in un modo appropriato
         self.engine = None
+        self.cfg = None
 
     def run(self, config_path):
         """Esegue il batch di misurazioni basato sul file di configurazione."""
         
         # 1. Caricamento della configurazione
         with open(config_path) as f:
-            cfg = yaml.safe_load(f)
+            self.cfg = yaml.safe_load(f)
 
-        port = cfg["serial"]["port"]
-        baud = cfg["serial"]["baud"]
+        port = self.cfg["serial"]["port"]
+        baud = self.cfg["serial"]["baud"]
 
         # FUNZIONE FACTORY per creare l'interfaccia seriale
         def serial_interface_factory(port: str, baud: int, use_serial: bool):
@@ -28,25 +29,27 @@ class BatchRunner:
 
         # 2. INIEZIONE DELLE DIPENDENZE NELL'ENGINE
         # Ora l'engine è correttamente assegnato all'istanza della classe (self)
+        # istanzia il servizio di alimentazione (PowerSupplyService) così che i suoi metodi ricevano 'self'
         self.engine = FpgaMeasurementEngine(
             serial_interface_factory=serial_interface_factory,
-            asic_config=AsicConfigurator,
-            exporter=ExportService,
-            ps_service=PowerSupplyService
+            asic_config=AsicConfigurator(),
+            exporter=ExportService(),
+            ps_service=PowerSupplyService()
         )
         
         # Uso del metodo engine tramite self.engine
         self.engine.connect_power_supply() 
         self.engine._prepare_power_supply_for_sweep() 
-
         # 3. Esecuzione dei task
-        for task in cfg["tasks"]:
+        for task in self.cfg["tasks"]:
             op = task["operation"]
 
             if op == "sweep_pixel":
                 p = task
                 print(f"Running sweep: {p['name']}")
 
+                print(f"Sweep params: {p['sweep']}")
+                print(f"Pixel config params: {p['config']}")
                 sweep_params = p["sweep"]
                 pixel_cfg = p["config"]
 
