@@ -95,9 +95,29 @@ class BatchRunner:
                     isMatrixScan=False
                 )
 
-            #elif op == "matrix_scan":
-            #   ...
-            #   aggiungi logica
+            elif op == "matrix_scan":
+                p = task
+
+                sweep_params = p["sweep"]
+                pixel_config_params = p["config"]
+
+                injection_timing_settings = {
+                'bypass': injection_cfg["bypass"], 'period': injection_cfg["period"],
+                'burst': injection_cfg["burst"], 'duty': injection_cfg["duty"]
+                }
+
+
+                # Uso del metodo engine tramite self.engine
+                total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+                    port, baud,
+                    sweep_params=sweep_params,
+                    timing_injection_settings=injection_timing_settings,
+                    pixel_config_params=pixel_config_params
+                )
+
+                print(f"Total pixels: {total_pixels}, Successful: {successful_pixels}, Failed: {failed_pixels}")
+                print(f"Total time: {total_time} seconds, Average time per pixel: {avg_time_per_pixel} seconds")
+
 
             else:
                 raise ValueError(f"Unsupported op {op}")
