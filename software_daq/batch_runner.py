@@ -3,6 +3,8 @@ from fpga_measurement_engine import FpgaMeasurementEngine
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface
 from export_service import ExportService
+from power_supply_controller import PowerSupplyService 
+
 
 def run_batch(config_path):
     with open(config_path) as f:
@@ -12,12 +14,20 @@ def run_batch(config_path):
     port = cfg["serial"]["port"]
     baud = cfg["serial"]["baud"]
 
-    engine = FpgaMeasurementEngine(
-        serial_interface_factory=lambda port, baud, use_serial=True: SerialInterface(port, baud, use_serial),
-        asic_config=AsicConfigurator(),
-        exporter=ExportService(),
-        ps_service=None
+        # FUNZIONE FACTORY per creare l'interfaccia seriale
+    def serial_interface_factory(port: str, baud: int, use_serial: bool):
+         # Il costruttore SerialInterface deve essere in grado di gestire l'emulazione
+        return SerialInterface(port, baud, use_serial=use_serial)
+
+    # 2. INIEZIONE DELLE DIPENDENZE NELL'ENGINE
+    self.engine = FpgaMeasurementEngine(
+        serial_interface_factory=serial_interface_factory,
+        asic_config=AsicConfigurator,
+        exporter=ExportService,
+        ps_service=PowerSupplyService
     )
+    engine.connect_power_supply() # Usa l'iniezione per connettersi
+    engine._prepare_power_supply_for_sweep() 
 
 
     for task in cfg["tasks"]:
