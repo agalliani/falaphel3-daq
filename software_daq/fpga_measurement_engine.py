@@ -173,10 +173,7 @@ class FpgaMeasurementEngine:
    
     def _inject_a_pixel(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
-    
-
-        print(binary_command_params)
-        
+            
         # 2. Sequenza di comunicazione
         try:
             # proviamo  a resettare prima dell'iniezione
