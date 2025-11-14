@@ -1,3 +1,22 @@
+# Definizione del blocco CONFIG comune
+common_config: &DEFAULT_CONFIG # <--- ANCORA definita con &
+  cap25: 0
+  cap50: 1
+  test_en: 1
+  cap_csa_load: 1
+  out_en: 1
+  x: 0
+  y: 0
+# ---
+
+# Definizione del blocco SWEEP comune (ad eccezione dei valori start/end)
+common_sweep_params: &DEFAULT_SWEEP
+  step_v: 3
+  num_injections: 31
+  pixel_x: 0
+  pixel_y: 0
+# ---
+
 serial:
   port: "COM3"
   baud: 115200
@@ -9,70 +28,50 @@ injection:
   duty: 8
 
 tasks:
-
-    
-  - name: test_matrix_scan_1
+  # Task 1: TUP_0__DAC_0
+  - name: TUP_0__DAC_0
     operation: matrix_scan
-
     sweep:
-      start_v: 80
-      end_v: 50
-      step_v: 5
-      num_injections: 1
-      pixel_x: 0
-      pixel_y: 0
+      start_v: 70
+      end_v: 30
+      <<: *DEFAULT_SWEEP # <--- ALIAS che include i parametri comuni
     config:
       dac_th: 0
-      cap25: 1
-      cap50: 0
-      test_en: 1
-      cap_csa_load: 1
       t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-
-  - name: test_matrix_scan_2
+      <<: *DEFAULT_CONFIG # <--- ALIAS che include la configurazione comune
+      
+  # Task 2: TUP_0__DAC_8
+  - name: TUP_0__DAC_8
     operation: matrix_scan
-
     sweep:
-      start_v: 80
-      end_v: 50
-      step_v: 5
-      num_injections: 1
-      pixel_x: 0
-      pixel_y: 0
+      start_v: 65
+      end_v: 25
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 8
+      t_up: 0
+      <<: *DEFAULT_CONFIG
+      
+  # Task 7: TUP_1__DAC_0
+  - name: TUP_1__DAC_0
+    operation: matrix_scan
+    sweep:
+      start_v: 70
+      end_v: 30
+      <<: *DEFAULT_SWEEP
     config:
       dac_th: 0
-      cap25: 1
-      cap50: 0
-      test_en: 1
-      cap_csa_load: 1
-      t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-  - name: test_matrix_scan_3
+      t_up: 1
+      <<: *DEFAULT_CONFIG
+      
+  # Task 8: TUP_1__DAC_8
+  - name: TUP_1__DAC_8
     operation: matrix_scan
-
     sweep:
       start_v: 80
-      end_v: 50
-      step_v: 5
-      num_injections: 1
-      pixel_x: 0
-      pixel_y: 0
+      end_v: 30
+      <<: *DEFAULT_SWEEP
     config:
-      dac_th: 0
-      cap25: 1
-      cap50: 0
-      test_en: 1
-      cap_csa_load: 1
-      t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-    
-
-
-    
+      dac_th: 8
+      t_up: 1
+      <<: *DEFAULT_CONFIG
