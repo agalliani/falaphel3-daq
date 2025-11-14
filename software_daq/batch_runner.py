@@ -8,6 +8,10 @@ def run_batch(config_path):
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
+  
+    port = cfg["serial"]["port"]
+    baud = cfg["serial"]["baud"]
+
     engine = FpgaMeasurementEngine(
         serial_interface_factory=lambda port, baud, use_serial=True: SerialInterface(port, baud, use_serial),
         asic_config=AsicConfigurator(),
@@ -15,8 +19,6 @@ def run_batch(config_path):
         ps_service=None
     )
 
-    port = cfg["serial"]["port"]
-    baud = cfg["serial"]["baud"]
 
     for task in cfg["tasks"]:
         op = task["operation"]
@@ -36,8 +38,8 @@ def run_batch(config_path):
                 isMatrixScan=False
             )
 
-        elif op == "matrix_scan":
-            ...
+        #elif op == "matrix_scan":
+        #    ...
             # aggiungi logica
 
         else:
