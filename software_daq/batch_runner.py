@@ -53,14 +53,20 @@ class BatchRunner:
                 sweep_params = p["sweep"]
                 pixel_cfg = p["config"]
 
-                # Uso del metodo engine tramite self.engine
-                self.engine.perform_sweep(
-                    port, baud,
-                    sweep_params=sweep_params,
-                    binary_command_params=None,
-                    pixel_config_params=pixel_cfg,
-                    isMatrixScan=False
-                )
+                try:
+                    # Uso del metodo engine tramite self.engine
+                    self.engine.perform_sweep(
+                        port, baud,
+                        sweep_params=sweep_params,
+                        binary_command_params=None,
+                        pixel_config_params=pixel_cfg,
+                        isMatrixScan=False
+                    )
+                except Exception as e:
+                    # Gestione degli errori: log e continua con il task successivo
+                    print(f"Errore durante lo sweep '{p.get('name', '')}': {e}")
+                    
+                
 
             #elif op == "matrix_scan":
             #   ...

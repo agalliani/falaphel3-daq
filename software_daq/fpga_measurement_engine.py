@@ -175,6 +175,8 @@ class FpgaMeasurementEngine:
         """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
     
 
+        print(binary_command_params)
+        
         # 2. Sequenza di comunicazione
         try:
             # proviamo  a resettare prima dell'iniezione

@@ -12,7 +12,7 @@ tasks:
       step_v: 3
       num_injections: 31
       pixel_x: 10
-      pixel_y: 10
+      pixel_y: 6
     config:
       dac_th: 12
       cap25: 1
@@ -22,7 +22,7 @@ tasks:
       t_up: 0
       out_en: 1
       x: 10
-      y: 10
+      y: 6
 
 
     
