@@ -50,13 +50,12 @@ class BatchRunner:
 
         # === UNA SOLA progress bar per i task ===
         tasks_list = self.cfg["tasks"]
-        task_main = self.progress.create_task("Batch tasks", total=len(tasks_list)) # task_main è l'ID del task
-
+        task_main = self.progress.create_task("Batch tasks", total=len(tasks_list))
         # 3. Esecuzione dei task
         for i, task in enumerate(tasks_list):
 
             task_name = f"Task {i+1}/{len(tasks_list)}: {task['name']}"
-            self.progress.update("Batch tasks", description=task_name, advance=1) 
+            self.progress.update(task_main, description=task_name, advance=1) 
 
             op = task["operation"]
 
