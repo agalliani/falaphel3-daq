@@ -252,12 +252,14 @@ class FpgaMeasurementEngine:
             
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
             
-            sweep_pixel_task_id = None
-            if progress_reporter:
-                # Creiamo un task con un ID dinamico, il 'name' in ProgressReporter verrà usato come chiave
-                sweep_pixel_task_id = progress_reporter.create_task(
-                    name=f"Sweep ({pixel_x},{pixel_y})", 
-                    total=len(voltages) * num_injections # Totale come numero di iniezioni totali
+            # --- : CONFIGURA IL TASK ESISTENTE PER IL NUOVO PIXEL ---
+            if progress_reporter and sweep_task_id:
+                # Reimposta il totale e la descrizione del task riutilizzato
+                progress_reporter.update(
+                    sweep_task_id, 
+                    total=total_injections_in_sweep, 
+                    description=f"Sweep ({pixel_x},{pixel_y}) [X={pixel_x}, Y={pixel_y}]", 
+                    advance=0 # Reimposta l'avanzamento a zero
                 )
 
             start_time = time.time()
@@ -301,13 +303,14 @@ class FpgaMeasurementEngine:
                             toa_results.append(toa_value)
                             remaining -= 1
 
-                        # Aggiorna la progress bar se fornita
-                        if progress_reporter and sweep_pixel_task_id:
-                            progress_reporter.update(sweep_pixel_task_id, 
+                    # ---  AGGIORNAMENTO TASK SWEEP PIXEL ---
+                    if progress_reporter and sweep_task_id:
+                        # Aggiorna il progresso e la descrizione con la tensione corrente
+                        progress_reporter.update(sweep_task_id, 
                                                 advance=1, 
                                                 description=f"Sweep ({pixel_x},{pixel_y}): {voltage} mV")
 
-                        time.sleep(self.injection_delay) # Ritardo hardware
+                    time.sleep(self.injection_delay) # Ritardo hardware
 
                     # 4. Calcolo delle statistiche
                     valid_tot_results = [r for r in tot_results if not math.isnan(r)]
@@ -359,14 +362,14 @@ class FpgaMeasurementEngine:
             elapsed_time = end_time - start_time
             print(f"Pixel injection sweep completed in {elapsed_time:.2f} seconds.")
 
-            # --- AGGIUNTO: CHIUSURA TASK SWEEP PIXEL ---
-            if progress_reporter and sweep_pixel_task_id:
-                # Forza il completamento e rimuovi la progress bar dello sweep
-                progress_reporter.update(sweep_pixel_task_id, 
+            # --- COMPLETA IL TASK SWEEP PIXEL SENZA RIMUOVERLO ---
+            if progress_reporter and sweep_task_id:
+                # Assicura il 100% senza rimuovere, in modo che sia pronto per la sovrascrittura
+                progress_reporter.update(sweep_task_id, 
                                         total=total_injections_in_sweep, 
                                         description=f"Sweep ({pixel_x},{pixel_y}) Done!", 
                                         advance=total_injections_in_sweep)
-                progress_reporter.remove_task(sweep_pixel_task_id)
+                # NON rimuovere qui. Verrà rimosso da perform_matrix_scan una volta finita la matrice.
 
             return elapsed_time
 
@@ -465,20 +468,27 @@ class FpgaMeasurementEngine:
         print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
         print(f"Injections per voltage: {sweep_params['num_injections']}")
 
+
+
         try:
             self.exporter.create_matrix_scan_file(pixel_config_params)
           
             scan_start_time = time.time()
             pixel_times = []
             failed_pixels = []
+
+            sweep_pixel_task_id = None
+            # Creiamo il task dello sweep con un totale temporaneo di 1, verrà aggiornato per ogni pixel
+            if progress_reporter:
+                sweep_pixel_task_id = progress_reporter.create_task("Pixel Sweep Progress", total=1)
             
             for y in range(matrix_rows):
                 for x in range(matrix_cols):
                     pixel_num = y * matrix_cols + x + 1
 
+                    # 1. Aggiorna il task di Scan della Matrice
                     pixel_desc = f"Scanning Pixel X={x}, Y={y}"
                     if progress_reporter and scan_task_id:
-                        # Aggiorniamo solo la descrizione del task (l'avanzamento avverrà in fondo al ciclo)
                         progress_reporter.update(scan_task_id, description=pixel_desc, advance=0)
                     else:
                         print(f"\n{'='*60}")
@@ -507,7 +517,7 @@ class FpgaMeasurementEngine:
                             port, baud, current_sweep_params, 
                             current_binary_commands, current_pixel_config, isMatrixScan=True,
                             progress_reporter=progress_reporter,
-                            sweep_task_id=scan_task_id # Non usato in sweep, ma passato per coerenza
+                            sweep_task_id=sweep_pixel_task_id # Non usato in sweep, ma passato per coerenza
                         )
                         pixel_times.append(elapsed)
                         time.sleep(0.5)  # Breve pausa tra i pixel
@@ -520,7 +530,12 @@ class FpgaMeasurementEngine:
                     # --- AGGIUNTO: AVANZAMENTO TASK MATRIX SCAN ---
                     if progress_reporter and scan_task_id:
                         progress_reporter.update(scan_task_id, advance=1)
+
                     scan_end_time = time.time()
+            
+            # --- RIMUOVI IL TASK SWEEP PIXEL UNA VOLTA FINITO LO SCAN ---
+            if progress_reporter and sweep_pixel_task_id:
+                progress_reporter.remove_task(sweep_pixel_task_id)
             
             
             total_scan_time = scan_end_time - scan_start_time

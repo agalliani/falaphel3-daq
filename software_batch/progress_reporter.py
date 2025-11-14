@@ -25,11 +25,12 @@ class ProgressReporter:
     # --- METODO AGGIORNATO: Accetta TaskID direttamente ---
     def update(self, task_id: TaskID, advance: int = 1, description: str = None, total: int = None):
         """Aggiorna l'avanzamento del task e la sua descrizione, accettando TaskID."""
-        # Se viene passato il nome per errore, cerchiamo l'ID (fallback)
+        # Aggiunta di un fallback robusto
         if isinstance(task_id, str):
             task_id = self.tasks.get(task_id)
             if task_id is None:
-                raise ValueError(f"Task with name '{task_id}' not found.")
+                # Se è l'ID stringa "Batch tasks" lo ricerchiamo, altrimenti errore
+                raise ValueError(f"Task with name/ID '{task_id}' not found.")
         
         # rich.progress.update accetta TaskID, advance, description e total
         self.progress.update(task_id, advance=advance, description=description, total=total)
