@@ -65,10 +65,10 @@ class FpgaControlApp:
         self.inj_duty = tk.IntVar(value=8)
 
         # NUOVE VARIABILI PER LO SWEEP DELLA TENSIONE
-        self.sweep_start_v = tk.IntVar(value=65)   # Tensione di partenza in mV
-        self.sweep_end_v = tk.IntVar(value=40)     # Tensione di fine in mV
-        self.sweep_step_v = tk.IntVar(value=4)     # Step di tensione in mV
-        self.num_injections = tk.IntVar(value=10) # Numero di iniezioni per step
+        self.sweep_start_v = tk.IntVar(value=100)   # Tensione di partenza in mV
+        self.sweep_end_v = tk.IntVar(value=30)     # Tensione di fine in mV
+        self.sweep_step_v = tk.IntVar(value=3)     # Step di tensione in mV
+        self.num_injections = tk.IntVar(value=31) # Numero di iniezioni per step
 
         # Variabili per l'iniezione su singolo pixel
         self.inj_pixel_x = tk.IntVar(value=6)
@@ -77,7 +77,7 @@ class FpgaControlApp:
         # VARIABILI PER LA CONFIGURAZIONE DEL PIXEL
         self.config_cap50 = tk.IntVar(value=1)
         self.config_cap25 = tk.IntVar(value=0)
-        self.config_cap_csa_load = tk.IntVar(value=0)
+        self.config_cap_csa_load = tk.IntVar(value=1)
         self.config_dac_th = tk.IntVar(value=0)
         self.config_test_en = tk.IntVar(value=1)
         self.config_t_up = tk.IntVar(value=0)
