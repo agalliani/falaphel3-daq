@@ -6,8 +6,6 @@ from asic_config import AsicConfigurator
 from serial_interface import SerialInterface
 from export_service import ExportService
 from power_supply_controller import PowerSupplyService
-from progress_reporter import ProgressReporter
-
 
 # --- Classe per eseguire il batch ---
 class BatchRunner:
@@ -15,8 +13,6 @@ class BatchRunner:
         # Inizializza l'attributo engine a None o in un modo appropriato
         self.engine = None
         self.cfg = None
-        self.progress = ProgressReporter()   # reporter
-
 
     def run(self, config_path):
         """Esegue il batch di misurazioni basato sul file di configurazione."""
@@ -48,20 +44,60 @@ class BatchRunner:
         self.engine._prepare_power_supply_for_sweep() 
 
 
-        # === UNA SOLA progress bar per i task ===
-        tasks_list = self.cfg["tasks"]
-        task_main = self.progress.create_task("Batch tasks", total=len(tasks_list))
+
 
         # 3. Esecuzione dei task
-        for task in tasks_list:
-
-            # avanza la progress bar
-            self.progress.update("Batch tasks")
-
-
+        for task in self.cfg["tasks"]:
             op = task["operation"]
 
-            if op == "matrix_scan":
+            if op == "sweep_pixel":
+                p = task
+
+                sweep_params = p["sweep"]
+                pixel_cfg = p["config"]
+                injection_cfg = self.cfg["injection"]
+
+                pad_word = self.engine.asic_config.get_init_pad_string()
+                pointer_word = self.engine.asic_config.get_pixel_pointer_selection(x_5b=pixel_cfg["x"], y_3b=pixel_cfg["y"])
+
+                config_pixel_word = self.engine.asic_config.get_config_pointed_pixel(
+                    cap25_1b=pixel_cfg["cap25"], dac_th_5b=pixel_cfg["dac_th"], test_en_1b=pixel_cfg["test_en"], 
+                    cap50_1b=pixel_cfg["cap50"], cap_csa_load_1b=pixel_cfg["cap_csa_load"], 
+                    t_up_1b=pixel_cfg["t_up"], out_en_1b=pixel_cfg["out_en"]
+                )
+
+                inj_word1_start, inj_word2_start = self.engine.asic_config.get_injection_settings(
+                    bypass_1b=injection_cfg["bypass"], period_8b=injection_cfg["period"], burst_8b=injection_cfg["burst"], duty_4b=injection_cfg["duty"], start_1b=1
+                )
+                inj_word1_stop, inj_word2_stop = self.engine.asic_config.get_injection_settings(
+                    bypass_1b=injection_cfg["bypass"], period_8b=injection_cfg["period"], burst_8b=injection_cfg["burst"], duty_4b=injection_cfg["duty"], start_1b=0
+                )
+                tot_request = self.engine.asic_config.get_save_tot_command()
+                toa_request = self.engine.asic_config.get_save_toa_command()
+
+                
+                binary_command_params = {
+                    'pad_word': pad_word,
+                    'pointer_word': pointer_word,
+                    'config_pixel_word': config_pixel_word,
+                    'inj_word1_start': inj_word1_start,
+                    'inj_word2_start': inj_word2_start,
+                    'inj_word1_stop': inj_word1_stop,
+                    'inj_word2_stop': inj_word2_stop,
+                    'tot_request': tot_request,
+                    'toa_request': toa_request
+                }
+                
+                # Uso del metodo engine tramite self.engine
+                self.engine.perform_sweep(
+                    port, baud,
+                    sweep_params=sweep_params,
+                    binary_command_params=binary_command_params,
+                    pixel_config_params=pixel_cfg,
+                    isMatrixScan=False
+                )
+
+            elif op == "matrix_scan":
                 p = task
 
                 sweep_params = p["sweep"]
@@ -83,15 +119,12 @@ class BatchRunner:
                     pixel_config_params=pixel_config_params
                 )
 
-                #print(f"Total pixels: {total_pixels}, Successful: {successful_pixels}, Failed: {failed_pixels}")
-                #print(f"Total time: {total_time} seconds, Average time per pixel: {avg_time_per_pixel} seconds")
+                print(f"Total pixels: {total_pixels}, Successful: {successful_pixels}, Failed: {failed_pixels}")
+                print(f"Total time: {total_time} seconds, Average time per pixel: {avg_time_per_pixel} seconds")
 
 
             else:
                 raise ValueError(f"Unsupported op {op}")
-
-        self.progress.stop()
-
             
 # ============================================================================== 
 # MAIN
