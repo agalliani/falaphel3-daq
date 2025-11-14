@@ -72,14 +72,21 @@ class BatchRunner:
                 'bypass': injection_cfg["bypass"], 'period': injection_cfg["period"],
                 'burst': injection_cfg["burst"], 'duty': injection_cfg["duty"]
                 }
-
+                # Estraiamo le dimensioni per il totale
+                matrix_rows = 8
+                matrix_cols = 32
+                total_pixels = matrix_rows * matrix_cols
+                # Creiamo il task secondario, usiamo l'ID perché è più sicuro in rich
+                scan_task_id = self.progress.create_task(f"Scan {i+1} Progress", total=total_pixels)
 
                 # Uso del metodo engine tramite self.engine
                 total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
                     port, baud,
                     sweep_params=sweep_params,
                     timing_injection_settings=injection_timing_settings,
-                    pixel_config_params=pixel_config_params
+                    pixel_config_params=pixel_config_params,
+                    progress_reporter=self.progress,
+                    scan_task_id=scan_task_id
                 )
 
                 print(f"Total pixels: {total_pixels}, Successful: {successful_pixels}, Failed: {failed_pixels}")
