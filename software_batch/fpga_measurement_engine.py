@@ -249,6 +249,10 @@ class FpgaMeasurementEngine:
             sweep_step = -step if start_voltage > end_voltage else step
             stop_value = end_voltage - step if start_voltage > end_voltage else end_voltage + 1
             voltages = list(range(start_voltage, stop_value, sweep_step))
+
+
+            num_injections_help = sweep_params.get("num_injections", 100) # Assumendo che venga da sweep_params
+            total_injections_in_sweep = len(voltages) * num_injections_help
             
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
             
