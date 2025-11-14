@@ -2,6 +2,12 @@ serial:
   port: "COM3"
   baud: 115200
 
+injection:
+  bypass: 0
+  period: 63
+  burst: 1
+  duty: 8
+
 tasks:
   - name: sweep_pixel_10_10
     operation: sweep_pixel
