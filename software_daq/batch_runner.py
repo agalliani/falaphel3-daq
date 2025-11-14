@@ -1,4 +1,6 @@
 import yaml
+import signal
+import sys
 from fpga_measurement_engine import FpgaMeasurementEngine
 from asic_config import AsicConfigurator
 from serial_interface import SerialInterface
@@ -100,6 +102,8 @@ class BatchRunner:
 
                 sweep_params = p["sweep"]
                 pixel_config_params = p["config"]
+                injection_cfg = self.cfg["injection"]
+
 
                 injection_timing_settings = {
                 'bypass': injection_cfg["bypass"], 'period': injection_cfg["period"],
@@ -121,6 +125,19 @@ class BatchRunner:
 
             else:
                 raise ValueError(f"Unsupported op {op}")
+            
+# ============================================================================== 
+# MAIN
+# ============================================================================== 
+def signal_handler(sig, frame):
+    # La gestione del segnale deve spegnere il power supply
+    # Questo richiede che il PowerSupplyService sia disponibile in questo contesto.
+
+    print(f"Ctrl+C pressed. Exiting gracefully...")
+
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 # --- Entry Point Principale ---
 if __name__ == "__main__":
