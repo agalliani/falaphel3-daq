@@ -251,8 +251,8 @@ class FpgaMeasurementEngine:
             voltages = list(range(start_voltage, stop_value, sweep_step))
 
 
-            num_injections_help = sweep_params.get("num_injections", 100) # Assumendo che venga da sweep_params
-            total_injections_in_sweep = len(voltages) * num_injections_help
+            #num_injections_help = sweep_params.get("num_injections", 100) # Assumendo che venga da sweep_params
+            total_injections_in_sweep = len(voltages) #* num_injections_help
             
             print(f"Starting sweep injection for pixel X={pixel_x}, Y={pixel_y} ({len(voltages)} steps).")
             
@@ -283,6 +283,13 @@ class FpgaMeasurementEngine:
                     self.ps_service.set_channel_voltage(channel=1, voltage=voltage/1000.0)
                     #self.ps_service.output_on(channel=1)
 
+                     # ---  AGGIORNAMENTO TASK SWEEP PIXEL ---
+                    if progress_reporter and sweep_task_id:
+                        # Aggiorna il progresso e la descrizione con la tensione corrente
+                        progress_reporter.update(sweep_task_id, 
+                                                advance=1, 
+                                                description=f"Sweep ({pixel_x},{pixel_y}): {voltage} mV")
+
                     remaining = num_injections
                     while remaining > 0:
 
@@ -307,12 +314,7 @@ class FpgaMeasurementEngine:
                             toa_results.append(toa_value)
                             remaining -= 1
 
-                    # ---  AGGIORNAMENTO TASK SWEEP PIXEL ---
-                    if progress_reporter and sweep_task_id:
-                        # Aggiorna il progresso e la descrizione con la tensione corrente
-                        progress_reporter.update(sweep_task_id, 
-                                                advance=1, 
-                                                description=f"Sweep ({pixel_x},{pixel_y}): {voltage} mV")
+                   
 
                     time.sleep(self.injection_delay) # Ritardo hardware
 
