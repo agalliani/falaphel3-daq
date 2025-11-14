@@ -51,8 +51,45 @@ tasks:
       dac_th: 8
       t_up: 0
       <<: *DEFAULT_CONFIG
+
+  # Task 3: TUP_0__DAC_16
+  - name: TUP_0__DAC_16
+    operation: matrix_scan
+    sweep:
+      start_v: 65
+      end_v: 25
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 16
+      t_up: 0
+      <<: *DEFAULT_CONFIG
+  # Task 4: TUP_0__DAC_24
+  - name: TUP_0__DAC_24
+    operation: matrix_scan
+    sweep:
+      start_v: 55
+      end_v: 20
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 24
+      t_up: 0
+      <<: *DEFAULT_CONFIG
+
+  # Task 5: TUP_0__DAC_31
+  - name: TUP_0__DAC_31
+    operation: matrix_scan
+    sweep:
+      start_v: 45
+      end_v: 10
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 31
+      t_up: 0
+      <<: *DEFAULT_CONFIG
+
+
       
-  # Task 7: TUP_1__DAC_0
+  # Task 6: TUP_1__DAC_0
   - name: TUP_1__DAC_0
     operation: matrix_scan
     sweep:
@@ -64,7 +101,7 @@ tasks:
       t_up: 1
       <<: *DEFAULT_CONFIG
       
-  # Task 8: TUP_1__DAC_8
+  # Task 7: TUP_1__DAC_8
   - name: TUP_1__DAC_8
     operation: matrix_scan
     sweep:
@@ -73,5 +110,41 @@ tasks:
       <<: *DEFAULT_SWEEP
     config:
       dac_th: 8
+      t_up: 1
+      <<: *DEFAULT_CONFIG
+
+  # Task 8: TUP_1__DAC_16
+  - name: TUP_1__DAC_16
+    operation: matrix_scan
+    sweep:
+      start_v: 90
+      end_v: 40
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 16
+      t_up: 1
+      <<: *DEFAULT_CONFIG
+
+  # Task 9: TUP_1__DAC_24
+  - name: TUP_1__DAC_24
+    operation: matrix_scan
+    sweep:
+      start_v: 90
+      end_v: 45
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 24
+      t_up: 1
+      <<: *DEFAULT_CONFIG
+
+  # Task 10: TUP_1__DAC_31
+  - name: TUP_1__DAC_31
+    operation: matrix_scan
+    sweep:
+      start_v: 100
+      end_v: 50
+      <<: *DEFAULT_SWEEP
+    config:
+      dac_th: 31
       t_up: 1
       <<: *DEFAULT_CONFIG
