@@ -23,6 +23,7 @@ class ProgressReporter:
         return task_id
 
     # --- METODO AGGIORNATO: Accetta TaskID direttamente ---
+   # --- METODO AGGIORNATO: Accetta TaskID direttamente ---
     def update(self, task_id: TaskID, advance: int = 1, description: str = None, total: int = None):
         """Aggiorna l'avanzamento del task e la sua descrizione, accettando TaskID."""
         # Aggiunta di un fallback robusto
@@ -33,8 +34,16 @@ class ProgressReporter:
                 raise ValueError(f"Task with name/ID '{task_id}' not found.")
         
         # rich.progress.update accetta TaskID, advance, description e total
-        self.progress.update(task_id, advance=advance, description=description, total=total)
+        
+        # --- LOGICA DI RESET AGGIUNTA ---
+        if advance == 0 and total is not None:
+             # Se advance è 0 e total è impostato, resettiamo il progresso a 0 (completed=0)
+             self.progress.update(task_id, completed=0, description=description, total=total)
+        else:
+             # Altrimenti, avanziamo normalmente
+             self.progress.update(task_id, advance=advance, description=description, total=total)
 
+             
     def remove_task(self, task_id: TaskID):
         """Rimuove un task completato dalla visualizzazione."""
         self.progress.remove_task(task_id)
