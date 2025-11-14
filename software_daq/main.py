@@ -278,7 +278,7 @@ class FpgaControlApp:
                 pixel_config_params=pixel_config_params
                 )
             
-            messagebox.showinfo("Success", f"Matrix injection scan completed successfully in {total_time:.2f} seconds. Data saved to file.")
+            messagebox.showinfo("Success", f"Matrix injection scan completed successfully in {total_time} seconds. Data saved to file.")
 
         except ValueError as e:
             messagebox.showerror("Input Error", f"Error in input values: {e}")

@@ -223,7 +223,7 @@ class FpgaMeasurementEngine:
         if not self.ps_service:
             raise RuntimeError("Impossibile eseguire lo sweep: Power Supply Service non disponibile (USE_SERIAL=True?).")
             
-        start_voltage = sweep_params['start_v'] + sweep_params["step_v"]
+        start_voltage = sweep_params['start_v']
         end_voltage = sweep_params['end_v']
         step = sweep_params['step_v']
         num_injections = sweep_params['num_injections']
