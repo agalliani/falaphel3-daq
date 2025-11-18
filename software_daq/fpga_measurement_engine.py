@@ -284,9 +284,8 @@ class FpgaMeasurementEngine:
                             remaining -= 1
                         elif not math.isnan(toa_value) and int(toa_value) == 255:
                             # ToA overflow -> retry without decrementing remaining
-                            self._send_resetn(port, baud)
 
-                            time.sleep(0.001)
+                            time.sleep(0.01)
                             continue 
                         else:
                             # Risultato valido

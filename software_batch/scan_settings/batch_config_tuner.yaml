@@ -13,8 +13,8 @@ tasks:
   - name: TEST_TUNING
     operation: matrix_scan
     sweep:
-      start_v: 70
-      end_v: 10
+      start_v: 100
+      end_v: 30
       step_v: 5
       num_injections: 10
       pixel_x: 0
