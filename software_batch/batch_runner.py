@@ -54,10 +54,13 @@ class BatchRunner:
         # 3. Esecuzione dei task
         for i, task in enumerate(tasks_list):
 
+            print(task)            
+
             task_name = f"Task {i+1}/{len(tasks_list)}: {task['name']}"
-            self.progress.update(task_main, description=task_name, advance=1) 
+            self.progress.update(task_main, description=task_name, advance=1)                 
 
             op = task["operation"]
+            
 
             if op == "matrix_scan":
                 p = task

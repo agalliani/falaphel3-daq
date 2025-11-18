@@ -35,7 +35,7 @@ da utilizzare come input per il software di misure del chip.
 ## Distribuzione dei codici trovati
 È stata verificata la distribuzione dei `tdac` assegnati tramite un istogramma: la distribuzione è approssimativamente normale e i codici ottenuti non saturano il range operativo del DAC (valori massimi intorno a 20).
 
-![Istogramma codici tdac](image-2.png)
+![Istogramma codici tdac](image-3.png)
 
 ## Prossimi passi
 - Applicare il tuning suggerito dal file `tdac_tuning_results.tsv` su uno o più pixel di test.
