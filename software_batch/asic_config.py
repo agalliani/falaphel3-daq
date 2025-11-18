@@ -32,7 +32,13 @@ class AsicConfigurator:
         può essere passata qui.
         """
         self.spi_interface = spi_interface
+        self.tuning_config = None
+
         print("AsicConfigurator pronto.")
+        
+
+    def set_tuning_config(self, config_matrix):
+        self.tuning_config = config_matrix
 
 
     def get_init_pad_string(self, slvs_drv_strg_4b: int = 0b0110, slvs_cmm_mode_4b: int = 0b0000) -> int:

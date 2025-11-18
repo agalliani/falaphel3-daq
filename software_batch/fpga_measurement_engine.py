@@ -7,6 +7,8 @@ import math
 import statistics
 from rich.progress import TaskID 
 
+from model.pixel_config import PixelConfig
+
 
 
 # ============================================================================== 
@@ -47,6 +49,7 @@ class FpgaMeasurementEngine:
         self.ps_service = ps_service # Sarà None se USE_SERIAL è True e non è stato iniettato
         self.spi_initialized = False # Flag per l'inizializzazione SPI
         self.injection_delay = 0.001 # Ritardo tra le iniezioni
+        self.tuning_config: Optional[PixelConfig] = None
 
         # Variabile per tracciare l'ultimo pixel configurato: (x, y)
         self._last_configured_pixel = None
@@ -173,7 +176,7 @@ class FpgaMeasurementEngine:
 ### METODI DI INIEZIONE E SWEEP PIXEL ###
    
     def _inject_a_pixel(self, x: int, y: int, binary_command_params: Dict[str, int], ser_int: SerialInterface) -> Tuple[float, float]:
-        """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente."""
+        """Esegue l'iniezione su un singolo pixel usando una connessione seriale pre-esistente. Usato per lo sweep completo automatico. """
             
         # 2. Sequenza di comunicazione
         try:
@@ -451,6 +454,13 @@ class FpgaMeasurementEngine:
         # Initialize pointer_word for the first pixel (0,0); will be updated per-pixel in the loop
         #pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=0, y_3b=0)
 
+        if self.tuning_config is not None:
+            pixel_config = self.tuning_config[row][col]
+            pixel_config_params['dac_th'] = pixel_config.tdac_tuner
+            pixel_config_params['t_up'] = pixel_config.t_up_tuner
+
+            print(f"Using tuned dac and t_up for matrix scan: dac_th={pixel_config_params['dac_th']}, t_up={pixel_config_params['t_up']}")
+
         config_pixel_word = self.asic_config.get_config_pointed_pixel(
             cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
             cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
@@ -693,3 +703,6 @@ class FpgaMeasurementEngine:
             
             except Exception as e:
                 raise RuntimeError(f"Error during sub-matrix scan procedure: {e}")
+
+    def set_tuning_config(self, config_matrix):
+        self.tuning_config = config_matrix
