@@ -454,18 +454,6 @@ class FpgaMeasurementEngine:
         # Initialize pointer_word for the first pixel (0,0); will be updated per-pixel in the loop
         #pointer_word = self.asic_config.get_pixel_pointer_selection(x_5b=0, y_3b=0)
 
-        if self.tuning_config is not None:
-            pixel_config = self.tuning_config[row][col]
-            pixel_config_params['dac_th'] = pixel_config.tdac_tuner
-            pixel_config_params['t_up'] = pixel_config.t_up_tuner
-
-            print(f"Using tuned dac and t_up for matrix scan: dac_th={pixel_config_params['dac_th']}, t_up={pixel_config_params['t_up']}")
-
-        config_pixel_word = self.asic_config.get_config_pointed_pixel(
-            cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
-            cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
-            t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
-        )
 
 
         inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
@@ -511,6 +499,20 @@ class FpgaMeasurementEngine:
                         print(f"Processing pixel {pixel_num}/{total_pixels}: X={x}, Y={y}")
                         print(f"{'='*60}")
                                 # Aggiorna i parametri per il pixel corrente
+                    
+                    if self.tuning_config is not None:
+                          pixel_config = self.tuning_config[x][y]
+                          pixel_config_params['dac_th'] = pixel_config.tdac_tuner
+                          pixel_config_params['t_up'] = pixel_config.t_up_tuner
+                    
+                          print(f"Using tuned dac and t_up for matrix scan: dac_th={pixel_config_params['dac_th']}, t_up={pixel_config_params['t_up']}")
+                    
+                    config_pixel_word = self.asic_config.get_config_pointed_pixel(
+                          cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
+                          cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
+                          t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+                      )
+
                     current_sweep_params = sweep_params.copy()
                     current_sweep_params['pixel_x'] = x
                     current_sweep_params['pixel_y'] = y

@@ -14,9 +14,9 @@ tasks:
     operation: matrix_scan
     sweep:
       start_v: 70
-      end_v: 30
-      step_v: 3
-      num_injections: 31
+      end_v: 10
+      step_v: 5
+      num_injections: 10
       pixel_x: 0
       pixel_y: 0
     config:

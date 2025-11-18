@@ -74,7 +74,7 @@ class BatchRunner:
                 p = task
 
                 # recupera la configurazione del tuner se presente
-                if p["tuner"] and p["tuner"]["file"]:
+                if p["tuner"]["file"] != "None":
                     print(f"Loading tuner configuration from {p['tuner']['file']}")
                     configs = load_pixel_configs(p["tuner"]["file"])
                     self.engine.set_tuning_config(configs)
@@ -134,4 +134,4 @@ signal.signal(signal.SIGINT, signal_handler)
 if __name__ == "__main__":
     # Creazione dell'istanza e chiamata del metodo run
     runner = BatchRunner()
-    runner.run("batch_config_tuner.yaml")
+    runner.run("scan_settings/batch_config_tuner.yaml")
