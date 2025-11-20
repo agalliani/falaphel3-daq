@@ -14,7 +14,7 @@ tasks:
     operation: matrix_scan
     sweep:
       start_v: 100
-      end_v: 30
+      end_v: 20
       step_v: 5
       num_injections: 10
       pixel_x: 0
@@ -30,4 +30,4 @@ tasks:
       x: 0
       y: 0
     tuner:
-      file: tuner_configs/tdac_tuning_results_v0.tsv
+      file: tuner_configs/tdac_tuning_results.tsv
