@@ -9,25 +9,25 @@ injection:
   duty: 8
 
 tasks:
-
-  - name: TEST_TOT_SCAN
-    operation: matrix_scan
+  - name: TEST_SUBMATRIX_SCAN
+    operation: submatrix_scan
+    submatrix:
+      start_x: 3 # Starting X coordinate of the sub-matrix (to be within 0-31)
+      start_y: 3 # Starting Y coordinate of the sub-matrix (to be within 0-7)
+      width:  4 # Span Width of the sub-matrix (max 32). Considera che 32 è il massimo. quindi potrai al massimo fare 32 - start_x
+      height: 4 # Span Height of the sub-matrix (max 8). Considera che 8 è il massimo. quindi potrai al massimo fare 8 - start_y
     sweep:
-      start_v: 100 # Starting voltage for the sweep
-      end_v: 40 # Ending voltage for the sweep
-      step_v: 3 # Voltage step for the sweep
-      num_injections: 10 # Number of injections per voltage step
-      pixel_x: 0 # X coordinate of the pixel to scan
-      pixel_y: 0 # Y coordinate of the pixel to scan
-      long_sweep_tot: true # Enable long ToT sweep
-      long_sweep_range:
-        start_long_v: 460 # Starting voltage for the long ToT sweep
-        end_long_v: 100 # Ending voltage for the long ToT sweep
-        step_long_v: 6 # Voltage step for the long ToT sweep
-    config:  
+      start_v: 70
+      end_v: 45
+      step_v: 3
+      num_injections: 10
+      pixel_x: 0
+      pixel_y: 0
+      long_sweep_tot: false
+    config:
       dac_th: 0
       cap25: 0
-      cap50: 0
+      cap50: 1
       test_en: 1
       cap_csa_load: 1
       t_up: 0
@@ -37,32 +37,4 @@ tasks:
     tuner:
       enabled: true
       file: tuner_configs/tdac_tuning_results.tsv
-
-  - name: TEST_SUBMATRIX_SCAN
-    operation: submatrix_scan
-    submatrix:
-      start_x: 0 # Starting X coordinate of the sub-matrix (to be within 0-31)
-      start_y: 0 # Starting Y coordinate of the sub-matrix (to be within 0-7)
-      width: 16 # Span Width of the sub-matrix (max 32)
-      height: 16 # Span Height of the sub-matrix (max 8)
-    sweep:
-      start_v: 120
-      end_v: 60
-      step_v: 3
-      num_injections: 10
-      pixel_x: 16
-      pixel_y: 16
-      long_sweep_tot: false
-    config:
-      dac_th: 0
-      cap25: 0
-      cap50: 0
-      test_en: 1
-      cap_csa_load: 1
-      t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-    tuner:
-      enabled: false
     
