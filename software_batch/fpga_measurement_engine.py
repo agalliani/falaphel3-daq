@@ -394,54 +394,9 @@ class FpgaMeasurementEngine:
     def perform_matrix_scan(self, port: str, baud: int, sweep_params: Dict[str, int], timing_injection_settings: Dict[str, int],
                            pixel_config_params: Dict[str, int],
                            progress_reporter: Optional[Any] = None,
-                           scan_task_id: Optional[TaskID] = None) -> Dict[str, Any]:
-        """
-        Esegue uno scan completo della matrice 8x32 pixel.
-        Per ogni pixel, esegue un perform_sweep completo.
-
-        Args:
-            port: Porta seriale
-            baud: Baudrate
-            sweep_params: Parametri di sweep (start_v, end_v, step_v, num_injections)
-                          Nota: pixel_x e pixel_y verranno sovrascritti
-            timing_injection_settings: Impostazioni di temporizzazione per l'iniezione
-            pixel_config_params: Template della configurazione pixel (verrà aggiornato per ogni pixel)
-            
-            sweep_params = {
-                'start_v', 
-                'step_v',
-                'pixel_x',
-                'pixel_y'
-            }
-
-            timing_injection_settings = {
-                'bypass',
-                'period',
-                'burst',
-                'duty'
-            }
-
-            pixel_config_params = {
-                'cap25',
-                'dac_th', 
-                'test_en',
-                'cap50',
-                'cap_csa_load',
-                't_up', 
-                'out_en
-            }
-
-        Returns:
-            Dizionario con statistiche dello scan completo.
-            scan_stats = {
-                'total_pixels',
-                'successful_pixels',
-                'failed_pixels',
-                'total_time',
-                'avg_time_per_pixel'
-            }
-
-        """
+                           scan_task_id: Optional[TaskID] = None,
+                           long_tot_sweep_params: Optional[Dict[str, int]] = None) -> Dict[str, Any]:
+        """Esegue una scansione completa della matrice 8x32 variando la tensione di soglia per ogni pixel."""
         matrix_rows = 8
         matrix_cols = 32
         total_pixels = matrix_rows * matrix_cols
@@ -471,8 +426,6 @@ class FpgaMeasurementEngine:
         print(f"Starting full matrix scan: {matrix_rows}x{matrix_cols} = {total_pixels} pixels")
         print(f"Voltage range: {sweep_params['start_v']}-{sweep_params['end_v']} mV, Step: {sweep_params['step_v']} mV")
         print(f"Injections per voltage: {sweep_params['num_injections']}")
-
-
 
         try:
             self.exporter.create_matrix_scan_file(pixel_config_params)
@@ -531,6 +484,22 @@ class FpgaMeasurementEngine:
                         'toa_request': toa_request
                     }
                     try:
+                    
+                        # se long_tot_sweep_params è fornito, lo passiamo a perform_sweep per fare lo sweep lungo del ToT e poi accodare lo sweep normale
+                        if long_tot_sweep_params == True:
+                            print(f"Performing long ToT sweep for pixel ({x},{y}) before normal sweep")
+                            current_long_sweep_params = sweep_params.copy()
+                            current_long_sweep_params['start_v'] = long_tot_sweep_params['start_long_v']
+                            current_long_sweep_params['end_v'] = long_tot_sweep_params['end_long_v']
+                            current_long_sweep_params['step_v'] = long_tot_sweep_params['step_long_v']
+                            current_long_sweep_params['pixel_x'] = x
+                            current_long_sweep_params['pixel_y'] = y
+                            elapsed_long = self.perform_sweep(
+                                port, baud, current_long_sweep_params, current_binary_commands, current_pixel_config, isMatrixScan=True,
+                                progress_reporter=progress_reporter)
+                            
+                           
+                    
                         elapsed = self.perform_sweep(
                             port, baud, current_sweep_params, 
                             current_binary_commands, current_pixel_config, isMatrixScan=True,

@@ -19,6 +19,11 @@ tasks:
       num_injections: 31
       pixel_x: 0
       pixel_y: 0
+      long_sweep_tot: true
+      range:
+        start_long_v: 460
+        end_long_v: 100
+        step_long_v: 6
     config:
       dac_th: 0
       cap25: 0
