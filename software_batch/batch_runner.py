@@ -152,19 +152,43 @@ class BatchRunner:
                     # Creiamo il task secondario, usiamo l'ID perché è più sicuro in rich
                     scan_task_id = self.progress.create_task(f"Scan {i+1} Progress", total=total_pixels)
 
-                    total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
-                        port=port,
-                        baud=baud,
+                    # recupera la configurazione del tuner se presente
+                    if p["tuner"]["enabled"] == True and  p["tuner"]["file"] != "None":
+                        print(f"Loading tuner configuration from {p['tuner']['file']}")
+                        configs = load_pixel_configs(p["tuner"]["file"])
+                        self.engine.set_tuning_config(configs)
+
+                        print(f"Loaded tuner config for task {p['name']}")
+
+
+                    if p["sweep"]["long_sweep_tot"] == True:
+                        print("Long TOT sweep enabled.")
+                        long_sweep_params = {
+                            "start_long_v": p["sweep"]["long_sweep_range"]["start_long_v"],
+                            "end_long_v": p["sweep"]["long_sweep_range"]["end_long_v"],
+                            "step_long_v": p["sweep"]["long_sweep_range"]["step_long_v"]
+                        }
+                        print(f"Long TOT sweep params: {long_sweep_params}")
+                        total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+                        port, baud,
                         sweep_params=sweep_params,
                         timing_injection_settings=injection_cfg,
                         pixel_config_params=pixel_config_params,
-                        start_x=start_x,
-                        start_y=start_y,
-                        width=width,
-                        height=height,
+                        progress_reporter=self.progress,
+                        scan_task_id=scan_task_id,
+                        long_tot_sweep_params=long_sweep_params
+                        )
+                    else:
+                        total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+                        port, baud,
+                        sweep_params=sweep_params,
+                        timing_injection_settings=injection_cfg,
+                        pixel_config_params=pixel_config_params,
                         progress_reporter=self.progress,
                         scan_task_id=scan_task_id
                         )
+                    
+
 
                     messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully. Size: {width}x{height}. Data saved to file.")
 
