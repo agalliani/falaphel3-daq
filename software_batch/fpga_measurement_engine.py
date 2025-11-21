@@ -643,8 +643,8 @@ class FpgaMeasurementEngine:
                             'tot_request': tot_request,
                             'toa_request': toa_request
                         }
-                        try:
 
+                        try:
                             
                         # se long_tot_sweep_params è fornito, lo passiamo a perform_sweep per fare lo sweep lungo del ToT e poi accodare lo sweep normale
                             if long_tot_sweep_params is not None:
@@ -660,8 +660,6 @@ class FpgaMeasurementEngine:
                                     progress_reporter=progress_reporter)
 
                            
-
-
 
                             elapsed = self.perform_sweep(
                                 port, baud, current_sweep_params, 

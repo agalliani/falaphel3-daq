@@ -62,12 +62,9 @@ class BatchRunner:
         # 3. Esecuzione dei task
         for i, task in enumerate(tasks_list):
 
-            #print(task)            
-
             task_name = f"Task {i+1}/{len(tasks_list)}: {task['name']}"
             self.progress.update(task_main, description=task_name, advance=1)                 
 
-            
             
             op = task["operation"]
             if op == "matrix_scan":
@@ -78,7 +75,7 @@ class BatchRunner:
                     print(f"Loading tuner configuration from {p['tuner']['file']}")
                     configs = load_pixel_configs(p["tuner"]["file"])
                     self.engine.set_tuning_config(configs)
-                    # Ora 'configs' contiene la matrice di PixelConfig
+
                     print(f"Loaded tuner config for task {p['name']}")
 
 
@@ -142,11 +139,18 @@ class BatchRunner:
                 else:
                     print(f"Starting sub-matrix scan at ({p['submatrix']['start_x']}, {p['submatrix']['start_y']}) "
                           f"with size {p['submatrix']['width']}x{p['submatrix']['height']}")
+
+            
                 
                     start_x = p["submatrix"]["start_x"]
                     start_y = p["submatrix"]["start_y"]
                     width = p["submatrix"]["width"]
                     height = p["submatrix"]["height"]
+
+                    # Estraiamo le dimensioni per il totale
+                    total_pixels = width * height
+                    # Creiamo il task secondario, usiamo l'ID perché è più sicuro in rich
+                    scan_task_id = self.progress.create_task(f"Scan {i+1} Progress", total=total_pixels)
 
                     total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
                         port=port,
