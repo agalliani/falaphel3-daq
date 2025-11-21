@@ -170,22 +170,32 @@ class BatchRunner:
                         }
                         print(f"Long TOT sweep params: {long_sweep_params}")
                         total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
-                        port, baud,
-                        sweep_params=sweep_params,
-                        timing_injection_settings=injection_cfg,
-                        pixel_config_params=pixel_config_params,
-                        progress_reporter=self.progress,
-                        scan_task_id=scan_task_id,
-                        long_tot_sweep_params=long_sweep_params
+                            port=port,
+                            baud=baud,
+                            sweep_params=sweep_params,
+                            timing_injection_settings=injection_timing_settings,
+                            pixel_config_params=pixel_config_params,
+                            start_x=start_x,
+                            start_y=start_y,
+                            width=width,
+                            height=height,
+                            progress_reporter=self.progress,
+                            scan_task_id=scan_task_id,
+                            long_tot_sweep_params=long_sweep_params
                         )
                     else:
                         total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
-                        port, baud,
-                        sweep_params=sweep_params,
-                        timing_injection_settings=injection_cfg,
-                        pixel_config_params=pixel_config_params,
-                        progress_reporter=self.progress,
-                        scan_task_id=scan_task_id
+                            port=port,
+                            baud=baud,
+                            sweep_params=sweep_params,
+                            timing_injection_settings=injection_timing_settings,
+                            pixel_config_params=pixel_config_params,
+                            start_x=start_x,
+                            start_y=start_y,
+                            width=width,
+                            height=height,
+                            progress_reporter=self.progress,
+                            scan_task_id=scan_task_id
                         )
                     
 
