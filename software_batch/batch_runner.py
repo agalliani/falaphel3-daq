@@ -87,11 +87,6 @@ class BatchRunner:
                 pixel_config_params = p["config"]
                 injection_cfg = self.cfg["injection"]
 
-
-                injection_timing_settings = {
-                'bypass': injection_cfg["bypass"], 'period': injection_cfg["period"],
-                'burst': injection_cfg["burst"], 'duty': injection_cfg["duty"]
-                }
                 # Estraiamo le dimensioni per il totale
                 matrix_rows = 8
                 matrix_cols = 32
@@ -111,7 +106,7 @@ class BatchRunner:
                     total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
                     port, baud,
                     sweep_params=sweep_params,
-                    timing_injection_settings=injection_timing_settings,
+                    timing_injection_settings=injection_cfg,
                     pixel_config_params=pixel_config_params,
                     progress_reporter=self.progress,
                     scan_task_id=scan_task_id,
@@ -121,7 +116,7 @@ class BatchRunner:
                     total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
                     port, baud,
                     sweep_params=sweep_params,
-                    timing_injection_settings=injection_timing_settings,
+                    timing_injection_settings=injection_cfg,
                     pixel_config_params=pixel_config_params,
                     progress_reporter=self.progress,
                     scan_task_id=scan_task_id
@@ -131,6 +126,41 @@ class BatchRunner:
                 print(f"Total pixels: {total_pixels}, Successful: {successful_pixels}, Failed: {failed_pixels}")
                 print(f"Total time: {total_time} seconds, Average time per pixel: {avg_time_per_pixel} seconds")
 
+            elif op == "submatrix_scan":
+
+                p=task
+                sweep_params = p["sweep"]
+                pixel_config_params = p["config"]
+                injection_cfg = self.cfg["injection"]
+
+                # check che le dimensioni della sub-matrice siano valide
+                if (p["submatrix"]["start_x"] < 0 or p["submatrix"]["start_y"] < 0 or
+                    p["submatrix"]["width"] <= 0 or p["submatrix"]["height"] <= 0 or
+                    p["submatrix"]["start_x"] + p["submatrix"]["width"] > 32 or
+                    p["submatrix"]["start_y"] + p["submatrix"]["height"] > 8):
+                    raise ValueError("Invalid sub-matrix dimensions or start coordinates.")
+                else:
+                    print(f"Starting sub-matrix scan at ({p['submatrix']['start_x']}, {p['submatrix']['start_y']}) "
+                          f"with size {p['submatrix']['width']}x{p['submatrix']['height']}")
+                
+                    start_x = p["submatrix"]["start_x"]
+                    start_y = p["submatrix"]["start_y"]
+                    width = p["submatrix"]["width"]
+                    height = p["submatrix"]["height"]
+
+                    total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
+                        port=port,
+                        baud=baud,
+                        sweep_params=sweep_params,
+                        timing_injection_settings=injection_cfg,
+                        pixel_config_params=pixel_config_params,
+                        start_x=start_x,
+                        start_y=start_y,
+                        width=width,
+                        height=height
+                        )
+
+                    messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully. Size: {width}x{height}. Data saved to file.")
 
             else:
                 raise ValueError(f"Unsupported op {op}")
