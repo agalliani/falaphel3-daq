@@ -486,7 +486,7 @@ class FpgaMeasurementEngine:
                     try:
                     
                         # se long_tot_sweep_params è fornito, lo passiamo a perform_sweep per fare lo sweep lungo del ToT e poi accodare lo sweep normale
-                        if long_tot_sweep_params == True:
+                        if long_tot_sweep_params is not None:
                             print(f"Performing long ToT sweep for pixel ({x},{y}) before normal sweep")
                             current_long_sweep_params = sweep_params.copy()
                             current_long_sweep_params['start_v'] = long_tot_sweep_params['start_long_v']
