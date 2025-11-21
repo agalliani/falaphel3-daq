@@ -1,0 +1,232 @@
+serial:
+  port: "COM3"
+  baud: 115200
+
+injection:
+  bypass: 0
+  period: 63
+  burst: 1
+  duty: 8
+
+tasks:
+  - name: TOT_SCAN_0
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 0
+      cap50: 0
+      test_en: 1
+      cap_csa_load: 1
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
+
+  - name: TOT_SCAN_25
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 1
+      cap50: 0
+      test_en: 1
+      cap_csa_load: 1
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
+
+  - name: TOT_SCAN_50
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 0
+      cap50: 1
+      test_en: 1
+      cap_csa_load: 1
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
+
+  - name: TOT_SCAN_75
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 1
+      cap50: 1
+      test_en: 1
+      cap_csa_load: 1
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
+  
+  - name: TOT_SCAN_UNTUNED_0_CAP_0
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 0
+      cap50: 0
+      test_en: 1
+      cap_csa_load: 0
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: false
+
+  - name: TOT_SCAN_UNTUNED_25_CAP_0
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 1
+      cap50: 0
+      test_en: 1
+      cap_csa_load: 0
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: false
+    
+  - name: TOT_SCAN_UNTUNED_50_CAP_0
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 0
+      cap50: 1
+      test_en: 1
+      cap_csa_load: 0
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: false
+
+  - name: TOT_SCAN_UNTUNED_75_CAP_0
+    operation: matrix_scan
+    sweep:
+      start_v: 80 # Starting voltage for the sweep
+      end_v: 45 # Ending voltage for the sweep
+      step_v: 3 # Voltage step for the sweep
+      num_injections: 31 # Number of injections per voltage step
+      pixel_x: 0 # X coordinate of the pixel to scan
+      pixel_y: 0 # Y coordinate of the pixel to scan
+      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 6 # Voltage step for the long ToT sweep
+    config:  
+      dac_th: 0
+      cap25: 1
+      cap50: 1
+      test_en: 1
+      cap_csa_load: 0
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: false
+
+    
