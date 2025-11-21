@@ -319,7 +319,6 @@ class FpgaControlApp:
             }
 
 
-            # CHIAMA IL NUOVO METODO perform_sub_matrix_scan
             total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
                 port=port,
                 baud=baud,

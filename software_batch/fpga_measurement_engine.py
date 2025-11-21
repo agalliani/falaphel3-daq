@@ -551,8 +551,13 @@ class FpgaMeasurementEngine:
 
 
 
-    def perform_sub_matrix_scan(self, port: str, baud: int, sweep_params: Dict[str, int], timing_injection_settings: Dict[str, int],
-                                    pixel_config_params: Dict[str, int], start_x: int, start_y: int, width: int, height: int) -> Dict[str, Any]:
+    def perform_sub_matrix_scan(self, port: str, baud: int,
+                            sweep_params: Dict[str, int],
+                            timing_injection_settings: Dict[str, int],
+                            pixel_config_params: Dict[str, int], 
+                            start_x: int, start_y: int, 
+                            width: int, height: int, 
+                            long_tot_sweep_params: Optional[Dict[str, int]] = None) -> Dict[str, Any]:
             """
             Esegue la scansione di una sotto-matrice definita dai parametri start_x, start_y, width, height.
             Per ogni pixel, esegue un perform_sweep completo.
@@ -639,6 +644,25 @@ class FpgaMeasurementEngine:
                             'toa_request': toa_request
                         }
                         try:
+
+                            
+                        # se long_tot_sweep_params è fornito, lo passiamo a perform_sweep per fare lo sweep lungo del ToT e poi accodare lo sweep normale
+                            if long_tot_sweep_params is not None:
+                                print(f"Performing long ToT sweep for pixel ({x},{y}) before normal sweep")
+                                current_long_sweep_params = sweep_params.copy()
+                                current_long_sweep_params['start_v'] = long_tot_sweep_params['start_long_v']
+                                current_long_sweep_params['end_v'] = long_tot_sweep_params['end_long_v']
+                                current_long_sweep_params['step_v'] = long_tot_sweep_params['step_long_v']
+                                current_long_sweep_params['pixel_x'] = x
+                                current_long_sweep_params['pixel_y'] = y
+                                elapsed_long = self.perform_sweep(
+                                    port, baud, current_long_sweep_params, current_binary_commands, current_pixel_config, isMatrixScan=True,
+                                    progress_reporter=progress_reporter)
+
+                           
+
+
+
                             elapsed = self.perform_sweep(
                                 port, baud, current_sweep_params, 
                                 current_binary_commands, current_pixel_config, isMatrixScan=True
