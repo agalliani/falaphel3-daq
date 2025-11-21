@@ -173,7 +173,7 @@ class BatchRunner:
                             port=port,
                             baud=baud,
                             sweep_params=sweep_params,
-                            timing_injection_settings=injection_timing_settings,
+                            timing_injection_settings=injection_cfg,
                             pixel_config_params=pixel_config_params,
                             start_x=start_x,
                             start_y=start_y,
@@ -188,7 +188,7 @@ class BatchRunner:
                             port=port,
                             baud=baud,
                             sweep_params=sweep_params,
-                            timing_injection_settings=injection_timing_settings,
+                            timing_injection_settings=injection_cfg,
                             pixel_config_params=pixel_config_params,
                             start_x=start_x,
                             start_y=start_y,
@@ -198,10 +198,6 @@ class BatchRunner:
                             scan_task_id=scan_task_id
                         )
                     
-
-
-                    messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully. Size: {width}x{height}. Data saved to file.")
-
             else:
                 raise ValueError(f"Unsupported op {op}")
 
