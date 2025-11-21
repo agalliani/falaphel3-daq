@@ -16,11 +16,11 @@ tasks:
       start_v: 100
       end_v: 40
       step_v: 3
-      num_injections: 31
+      num_injections: 10
       pixel_x: 0
       pixel_y: 0
       long_sweep_tot: true
-      range:
+      long_sweep_range:
         start_long_v: 460
         end_long_v: 100
         step_long_v: 6

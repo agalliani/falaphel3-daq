@@ -100,12 +100,12 @@ class BatchRunner:
                 scan_task_id = self.progress.create_task(f"Scan {i+1} Progress", total=total_pixels)
 
                 # implementa possibilità di sweep lungo per la misura del tot anche ad alta carica
-                if p["long_sweep_tot"] == True:
+                if p["sweep"]["long_sweep_tot"] == True:
                     print("Long TOT sweep enabled.")
                     long_sweep_params = {
-                        "start_long_v": p["range"]["start_long_v"],
-                        "end_long_v": p["range"]["end_long_v"],
-                        "step_long_v": p["range"]["step_long_v"]
+                        "start_long_v": p["sweep"]["long_sweep_range"]["start_long_v"],
+                        "end_long_v": p["sweep"]["long_sweep_range"]["end_long_v"],
+                        "step_long_v": p["sweep"]["long_sweep_range"]["step_long_v"]
                     }
                     print(f"Long TOT sweep params: {long_sweep_params}")
                     total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
@@ -114,8 +114,8 @@ class BatchRunner:
                     timing_injection_settings=injection_timing_settings,
                     pixel_config_params=pixel_config_params,
                     progress_reporter=self.progress,
-                    scan_task_id=scan_task_id
-                    , long_sweep_params=long_sweep_params
+                    scan_task_id=scan_task_id,
+                    long_tot_sweep_params=long_sweep_params
                     )
                 else:
                     total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
