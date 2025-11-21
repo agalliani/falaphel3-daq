@@ -169,7 +169,7 @@ class BatchRunner:
                             "step_long_v": p["sweep"]["long_sweep_range"]["step_long_v"]
                         }
                         print(f"Long TOT sweep params: {long_sweep_params}")
-                        total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+                        total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
                         port, baud,
                         sweep_params=sweep_params,
                         timing_injection_settings=injection_cfg,
@@ -179,7 +179,7 @@ class BatchRunner:
                         long_tot_sweep_params=long_sweep_params
                         )
                     else:
-                        total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_matrix_scan(
+                        total_pixels, successful_pixels, failed_pixels, total_time, avg_time_per_pixel = self.engine.perform_sub_matrix_scan(
                         port, baud,
                         sweep_params=sweep_params,
                         timing_injection_settings=injection_cfg,
