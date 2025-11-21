@@ -74,7 +74,7 @@ class BatchRunner:
                 p = task
 
                 # recupera la configurazione del tuner se presente
-                if p["tuner"]["file"] != "None":
+                if p["tuner"]["enabled"] == True and  p["tuner"]["file"] != "None":
                     print(f"Loading tuner configuration from {p['tuner']['file']}")
                     configs = load_pixel_configs(p["tuner"]["file"])
                     self.engine.set_tuning_config(configs)

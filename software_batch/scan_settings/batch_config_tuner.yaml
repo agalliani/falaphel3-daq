@@ -10,7 +10,7 @@ injection:
 
 tasks:
 
-  - name: TEST_TUNING_0
+  - name: TEST_TOT_SCAN
     operation: matrix_scan
     sweep:
       start_v: 100
@@ -30,71 +30,6 @@ tasks:
       x: 0
       y: 0
     tuner:
+      enabled: true
       file: tuner_configs/tdac_tuning_results.tsv
     
-  - name: TEST_TUNING_cap50
-    operation: matrix_scan
-    sweep:
-      start_v: 100
-      end_v: 40
-      step_v: 3
-      num_injections: 31
-      pixel_x: 0
-      pixel_y: 0
-    config:
-      dac_th: 0
-      cap25: 0
-      cap50: 1
-      test_en: 1
-      cap_csa_load: 1
-      t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-    tuner:
-      file: tuner_configs/tdac_tuning_results.tsv
-
-  - name: TEST_TUNING_cap25
-    operation: matrix_scan
-    sweep:
-      start_v: 100
-      end_v: 40
-      step_v: 3
-      num_injections: 31
-      pixel_x: 0
-      pixel_y: 0
-    config:
-      dac_th: 0
-      cap25: 1
-      cap50: 0
-      test_en: 1
-      cap_csa_load: 1
-      t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-    tuner:
-      file: tuner_configs/tdac_tuning_results.tsv
-
-  - name: TEST_TUNING_cap75
-    operation: matrix_scan
-    sweep:
-      start_v: 100
-      end_v: 40
-      step_v: 3
-      num_injections: 31
-      pixel_x: 0
-      pixel_y: 0
-    config:
-      dac_th: 0
-      cap25: 1
-      cap50: 1
-      test_en: 1
-      cap_csa_load: 1
-      t_up: 0
-      out_en: 1
-      x: 0
-      y: 0
-    tuner:
-      file: tuner_configs/tdac_tuning_results.tsv
-
