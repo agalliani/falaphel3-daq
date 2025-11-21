@@ -161,7 +161,9 @@ class BatchRunner:
                         start_x=start_x,
                         start_y=start_y,
                         width=width,
-                        height=height
+                        height=height,
+                        progress_reporter=self.progress,
+                        scan_task_id=scan_task_id
                         )
 
                     messagebox.showinfo("Success", f"Sub-Matrix scan completed successfully. Size: {width}x{height}. Data saved to file.")

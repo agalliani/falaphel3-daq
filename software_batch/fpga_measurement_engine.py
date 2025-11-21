@@ -557,6 +557,8 @@ class FpgaMeasurementEngine:
                             pixel_config_params: Dict[str, int], 
                             start_x: int, start_y: int, 
                             width: int, height: int, 
+                            progress_reporter: Optional[Any] = None,
+                            scan_task_id: Optional[TaskID] = None,
                             long_tot_sweep_params: Optional[Dict[str, int]] = None) -> Dict[str, Any]:
             """
             Esegue la scansione di una sotto-matrice definita dai parametri start_x, start_y, width, height.
@@ -584,11 +586,7 @@ class FpgaMeasurementEngine:
     
             # --- 2. Generazione dei comandi SPI/ASIC (Impostazioni fisse) ---
             pad_word = self.asic_config.get_init_pad_string()
-            config_pixel_word = self.asic_config.get_config_pointed_pixel(
-                cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
-                cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
-                t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
-            )
+
             inj_word1_start, inj_word2_start = self.asic_config.get_injection_settings(
                 bypass_1b=timing_injection_settings['bypass'], period_8b=timing_injection_settings['period'], burst_8b=timing_injection_settings['burst'], duty_4b=timing_injection_settings['duty'], start_1b=1
             )
@@ -619,9 +617,29 @@ class FpgaMeasurementEngine:
                         pixel_num_x = x - start_x
                         pixel_num_total = pixel_num_y * width + pixel_num_x + 1
                         
-                        print(f"\n{'='*60}")
-                        print(f"Processing pixel {pixel_num_total}/{total_pixels}: Absolute X={x}, Y={y}")
-                        print(f"{'='*60}")
+
+
+                        # 1. Aggiorna il task di Scan della Matrice
+                        pixel_desc = f"Scanning Pixel X={x}, Y={y}"
+                        if progress_reporter and scan_task_id:
+                            progress_reporter.update(scan_task_id, description=pixel_desc, advance=0)
+                        else:
+                            print(f"\n{'='*60}")
+                            print(f"Processing pixel {pixel_num}/{total_pixels}: X={x}, Y={y}")
+                            print(f"{'='*60}")
+
+                        if self.tuning_config is not None:
+                            pixel_config = self.tuning_config[x][y]
+                            pixel_config_params['dac_th'] = pixel_config.tdac_tuner
+                            pixel_config_params['t_up'] = pixel_config.t_up_tuner
+                            print(f"Using tuned dac and t_up for matrix scan: dac_th={pixel_config_params['dac_th']}, t_up={pixel_config_params['t_up']}")
+
+
+                        config_pixel_word = self.asic_config.get_config_pointed_pixel(
+                          cap25_1b=pixel_config_params['cap25'], dac_th_5b=pixel_config_params['dac_th'], test_en_1b=pixel_config_params['test_en'], 
+                          cap50_1b=pixel_config_params['cap50'], cap_csa_load_1b=pixel_config_params['cap_csa_load'], 
+                          t_up_1b=pixel_config_params['t_up'], out_en_1b=pixel_config_params['out_en']
+                        )
                         
                         # Aggiorna i parametri per il pixel corrente
                         current_sweep_params = sweep_params.copy()
