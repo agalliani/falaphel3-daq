@@ -686,14 +686,15 @@ class FpgaMeasurementEngine:
                             pixel_times.append(elapsed)
                             #time.sleep(0.5)  # Breve pausa tra i pixel
                             print(f"Pixel ({x},{y}) completed successfully in {elapsed:.2f}s")
+
                         except Exception as e:
                             print(f"ERROR: Failed to scan pixel ({x},{y}): {e}")
                             failed_pixels.append((x, y))
                             continue
 
-                    # --- AVANZAMENTO TASK MATRIX SCAN ---
-                    if progress_reporter and scan_task_id:
-                        progress_reporter.update(scan_task_id, advance=1)
+                        # --- AVANZAMENTO TASK MATRIX SCAN ---
+                        if progress_reporter and scan_task_id:
+                            progress_reporter.update(scan_task_id, advance=1)
                         
                 scan_end_time = time.time()
                 # --- RIMUOVI IL TASK SWEEP PIXEL UNA VOLTA FINITO LO SCAN ---
