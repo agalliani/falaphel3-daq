@@ -13,8 +13,8 @@ tasks:
   - name: TEST_TOT_SCAN
     operation: matrix_scan
     sweep:
-      start_v: 100
-      end_v: 40
+      start_v: 80
+      end_v: 45
       step_v: 3
       num_injections: 10
       pixel_x: 0
@@ -23,7 +23,7 @@ tasks:
       long_sweep_range:
         start_long_v: 460
         end_long_v: 100
-        step_long_v: 6
+        step_long_v: 40
     config:
       dac_th: 0
       cap25: 0
