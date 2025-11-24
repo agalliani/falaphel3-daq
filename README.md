@@ -11,9 +11,8 @@ Quali plot generare e quale file utilizzare come sorgente dati viene deciso tram
 La gestione delle misure automatizzate avviene con il software contenuto nella cartella ```software_batch```. Anche qui è possibile configurare un file con estensione yaml per gestire quali misure fare e con che parametri.
 Fare riferimento al README di quella cartella.
 
-### Diagamma UML
 
-![alt text](image.png)
+
 
 The system is composed of the motherboard that hosts the chip, glued and wire-bonded to a daughter board. 
 The motherboard is responsible to manage the DC levels, powering and communication to the FPGA, which is used to program the digital part of the chip through SPI interface.
