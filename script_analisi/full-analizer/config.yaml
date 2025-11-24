@@ -1,0 +1,23 @@
+source_files:
+ # - "tot-lunghe/export_matrix_scan_251121_175215_cap_csa_load.tsv"
+ # - "tot-lunghe/export_matrix_scan_251121_222242_cap25_cap_csa_load.tsv"
+  - "tot-lunghe/export_matrix_scan_251122_122531_cap50_cap_csa_load.tsv"
+ # - "tot-lunghe/export_matrix_scan_251123_023708_cap50_cap25_cap_csa_load.tsv"
+voltage_threshold_max: 90
+
+# Abilitazione/Disabilitazione Plot
+plots:
+  # 1. Plot: Tutti i punti sperimentali (scatter plot)
+  data_points: False
+  
+  # 2. Plot: S-curve dei fit sovrapposte
+  fit_curves: False
+  
+  # 3. Plot: Istogrammi di Threshold e Dispersion
+  histograms: False 
+  
+  # 4. Plot: Timer-over-threshold in funzione del Voltage (Tot vs V)
+  tot_vs_voltage: True 
+
+  # 5. Plot: Time-of_arrival in funzione del Voltage (ToA vs V)
+  toa_vs_voltage: True
