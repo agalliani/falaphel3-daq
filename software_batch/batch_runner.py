@@ -220,4 +220,4 @@ signal.signal(signal.SIGINT, signal_handler)
 if __name__ == "__main__":
     # Creazione dell'istanza e chiamata del metodo run
     runner = BatchRunner()
-    runner.run("scan_settings/batch_config_tuner.yaml")
+    runner.run("scan_settings/batch_config.yaml")
