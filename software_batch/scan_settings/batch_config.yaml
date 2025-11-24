@@ -13,12 +13,12 @@ tasks:
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
-      end_v: 45 # Ending voltage for the sweep
-      step_v: 3 # Voltage step for the sweep
+      end_v: 46 # Ending voltage for the sweep
+      step_v: 2 # Voltage step for the sweep
       num_injections: 31 # Number of injections per voltage step
       pixel_x: 0 # X coordinate of the pixel to scan
       pixel_y: 0 # Y coordinate of the pixel to scan
-      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_tot: false # Enable long ToT sweep
       long_sweep_range:
         start_long_v: 460 # Starting voltage for the long ToT sweep
         end_long_v: 100 # Ending voltage for the long ToT sweep
@@ -40,12 +40,12 @@ tasks:
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
-      end_v: 45 # Ending voltage for the sweep
-      step_v: 3 # Voltage step for the sweep
+      end_v: 46 # Ending voltage for the sweep
+      step_v: 2 # Voltage step for the sweep
       num_injections: 31 # Number of injections per voltage step
       pixel_x: 0 # X coordinate of the pixel to scan
       pixel_y: 0 # Y coordinate of the pixel to scan
-      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_tot: false # Enable long ToT sweep
       long_sweep_range:
         start_long_v: 460 # Starting voltage for the long ToT sweep
         end_long_v: 100 # Ending voltage for the long ToT sweep
@@ -67,12 +67,12 @@ tasks:
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
-      end_v: 45 # Ending voltage for the sweep
-      step_v: 3 # Voltage step for the sweep
+      end_v: 46 # Ending voltage for the sweep
+      step_v: 2 # Voltage step for the sweep
       num_injections: 31 # Number of injections per voltage step
       pixel_x: 0 # X coordinate of the pixel to scan
       pixel_y: 0 # Y coordinate of the pixel to scan
-      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_tot: false # Enable long ToT sweep
       long_sweep_range:
         start_long_v: 460 # Starting voltage for the long ToT sweep
         end_long_v: 100 # Ending voltage for the long ToT sweep
@@ -94,12 +94,12 @@ tasks:
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
-      end_v: 45 # Ending voltage for the sweep
-      step_v: 3 # Voltage step for the sweep
+      end_v: 46 # Ending voltage for the sweep
+      step_v: 2 # Voltage step for the sweep
       num_injections: 31 # Number of injections per voltage step
       pixel_x: 0 # X coordinate of the pixel to scan
       pixel_y: 0 # Y coordinate of the pixel to scan
-      long_sweep_tot: true # Enable long ToT sweep
+      long_sweep_tot: false # Enable long ToT sweep
       long_sweep_range:
         start_long_v: 460 # Starting voltage for the long ToT sweep
         end_long_v: 100 # Ending voltage for the long ToT sweep
