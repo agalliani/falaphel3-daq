@@ -22,7 +22,7 @@ def myERF(x, mu, sigma):
     return 0.5 * (1.0 + erf((x - mu) / (sigma * np.sqrt(2.0))))
 
 
-def plot_histogram(fit_df, bins, figsize, color, column="threshold", file_name=""):
+def plot_histogram(fit_df, bins, figsize, color, column="threshold", file_name="", exportRawData=False):
     """
     Disegna l'istogramma della colonna specificata dal dataframe dei fit.
     """
@@ -61,6 +61,12 @@ def plot_histogram(fit_df, bins, figsize, color, column="threshold", file_name="
 
     ax.legend(loc='best', fontsize='small')
     fig.tight_layout()
+
+    if exportRawData:
+        export_path = Path(f"plot_raw_data/histograms/histogram_{column}_{file_name.replace('.','_')}.csv")
+        export_path.parent.mkdir(parents=True, exist_ok=True)
+        data.to_csv(export_path, index=False)
+        print(f" -> Dati grezzi esportati in: {export_path.resolve()}")
     return fig, ax
 
 
@@ -210,6 +216,7 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
     
     # Prendi le opzioni dei plot
     plot_cfg = cfg.get("plots", {})
+    save_data_enabled = cfg.get("save_data_from_plots", False)
     
     # ----------------------------------------------------------------------
     # Funzione di callback per la legenda interattiva
@@ -245,7 +252,7 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
     print(f"\nGenerazione plot per: {file_name}")
     
     # ----------------------------------------------------------------------
-    # 1. Plot: Tutti i punti sperimentali
+    # 1. Plot: Tutti i punti misurati
     # ----------------------------------------------------------------------
     if plot_cfg.get("data_points", False) and all_data_points:
         df_all_points = pd.concat(all_data_points, ignore_index=True)
@@ -253,7 +260,7 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
         plt.scatter(
             df_all_points["voltage"], 
             df_all_points[y_col_name], 
-            s=5, alpha=0.3, label="Dati sperimentali di tutti i pixel"
+            s=5, alpha=0.3, label="Dati misurati di tutti i pixel"
         )
         plt.title(f"Punti di Dati ({y_col_name})\n(File: {file_name})", fontsize=10)
         plt.xlabel("Voltage [mV]")
@@ -261,6 +268,12 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
         plt.grid(True)
         plt.tight_layout()
         print(" -> Creata figura: Punti di Dati.")
+
+        if save_data_enabled:
+            export_path = Path(f"plot_raw_data/data_points/data_points_{file_name.replace('.','_')}.csv")
+            export_path.parent.mkdir(parents=True, exist_ok=True)
+            df_all_points.to_csv(export_path, index=False)
+            print(f" -> Dati grezzi esportati in: {export_path.resolve()}")
 
 
     # ----------------------------------------------------------------------
@@ -277,14 +290,26 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
         plt.tight_layout()
         print(" -> Creata figura: S-curves.")
 
+        if save_data_enabled:
+            export_path = Path(f"plot_raw_data/fit_curves/fit_curves_{file_name.replace('.','_')}.csv")
+            export_path.parent.mkdir(parents=True, exist_ok=True)
+            with export_path.open("w", encoding="utf-8") as f:
+                f.write("xs,ys\n")
+                for xs, ys in fit_curves:
+                    for x, y in zip(xs, ys):
+                        f.write(f"{x},{y}\n")
+                    f.write("\n")  # Separatore tra curve
+            print(f" -> Dati grezzi esportati in: {export_path.resolve()}")
+
     # ----------------------------------------------------------------------
     # 3. Plot: Istogrammi di Threshold e Dispersion
     # ----------------------------------------------------------------------
     if plot_cfg.get("histograms", False):
-        plot_histogram(fit_df, 50, (6, 5), 'green', column="threshold", file_name=file_name)
-        plot_histogram(fit_df, 50, (6, 5), 'orange', column="dispersion", file_name=file_name)
+        plot_histogram(fit_df, 50, (6, 5), 'green', column="threshold", file_name=file_name, exportRawData=save_data_enabled)
+        plot_histogram(fit_df, 50, (6, 5), 'orange', column="dispersion", file_name=file_name, exportRawData=save_data_enabled)
         print(" -> Create figure: Istogrammi.")
 
+  
     # ----------------------------------------------------------------------
     # 4. Plot: Timer-over-threshold (INTERATTIVO)
     # ----------------------------------------------------------------------
@@ -338,6 +363,8 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
                     print(" -> Creata figura: Timer-over-threshold (Legenda Cliccabile).")
                 else:
                     print(" -> Creata figura: Timer-over-threshold (Non interattiva, troppi pixel).")
+
+
 
     # ----------------------------------------------------------------------
     # 5. Plot: Time-of-Arrival (INTERATTIVO)
@@ -393,6 +420,7 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
                 else:
                     print(" -> Creata figura: Time-of-Arrival (Non interattiva, troppi pixel).")
 
+       
 
 
 
