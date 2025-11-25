@@ -9,7 +9,7 @@ injection:
   duty: 8
 
 tasks:
-  - name: TOT_SCAN_UNTUNED_0_CAP_0
+  - name: TOT_SCAN_CAP_1
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
@@ -34,9 +34,11 @@ tasks:
       x: 0
       y: 0
     tuner:
-      enabled: false
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
 
-  - name: TOT_SCAN_UNTUNED_25_CAP_0
+
+  - name: TOT_SCAN_25_CAP_1
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
@@ -61,9 +63,10 @@ tasks:
       x: 0
       y: 0
     tuner:
-      enabled: false
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
     
-  - name: TOT_SCAN_UNTUNED_50_CAP_0
+  - name: TOT_SCAN_50_CAP_1
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
@@ -88,9 +91,10 @@ tasks:
       x: 0
       y: 0
     tuner:
-      enabled: false
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
 
-  - name: TOT_SCAN_UNTUNED_75_CAP_0
+  - name: TOT_SCAN_75_CAP_1
     operation: matrix_scan
     sweep:
       start_v: 80 # Starting voltage for the sweep
@@ -115,6 +119,7 @@ tasks:
       x: 0
       y: 0
     tuner:
-      enabled: false
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
 
     
