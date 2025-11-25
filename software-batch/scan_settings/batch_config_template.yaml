@@ -23,7 +23,7 @@ tasks:
       long_sweep_range:
         start_long_v: 460 # Starting voltage for the long ToT sweep
         end_long_v: 100 # Ending voltage for the long ToT sweep
-        step_long_v: 6 # Voltage step for the long ToT sweep
+        step_long_v: 40 # Voltage step for the long ToT sweep
     config:  
       dac_th: 0
       cap25: 0

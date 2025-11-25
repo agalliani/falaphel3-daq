@@ -420,6 +420,97 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
                 else:
                     print(" -> Creata figura: Time-of-Arrival (Non interattiva, troppi pixel).")
 
+    # ----------------------------------------------------------------------
+    # 6. Plot: Time-over-threshold medio con bande di errore
+    # ----------------------------------------------------------------------
+    if plot_cfg.get("tot_mean_with_error", False):
+        if "tot_avg" not in full_df.columns or "tot_std" not in full_df.columns:
+            print(" -> Colonne 'tot_avg' o 'tot_std' non presenti in full_df; skip plot Tot medio con errore.")
+        else:
+            grouped = full_df.groupby("voltage")
+            voltages = []
+            tot_means = []
+            tot_stds = []
+
+            for voltage, grp in grouped:
+                voltages.append(voltage)
+                tot_means.append(grp["tot_avg"].mean() * TOT_CLOCK)
+                tot_stds.append(grp["tot_std"].mean() * TOT_CLOCK)
+
+            voltages = np.array(voltages)
+            tot_means = np.array(tot_means)
+            tot_stds = np.array(tot_stds)
+
+            plt.figure(figsize=(6, 5))
+            plt.errorbar(
+                voltages, tot_means, yerr=tot_stds,
+                fmt='.-', ecolor='red', elinewidth=2, capsize=4
+            )
+            plt.title(f"Timer-over-threshold Medio con Errore\n(File: {file_name})", fontsize=10)
+            plt.xlabel("Voltage [mV]")
+            plt.ylabel("Timer-over-Threshold Medio [ns]")
+            plt.grid(True)
+            plt.tight_layout()
+            print(" -> Creata figura: Timer-over-threshold Medio con Errore.")
+
+            if save_data_enabled:
+                export_path = Path(f"plot_raw_data/tot_mean_with_error/tot_mean_with_error_{file_name.replace('.','_')}.csv")
+                export_path.parent.mkdir(parents=True, exist_ok=True)
+                df_export = pd.DataFrame({
+                    "voltage": voltages,
+                    "tot_mean_ns": tot_means,
+                    "tot_std_ns": tot_stds
+                })
+                df_export.to_csv(export_path, index=False)
+                print(f" -> Dati grezzi esportati in: {export_path.resolve()}")
+
+    # ----------------------------------------------------------------------
+    # 7. Plot: Time-of-arrival medio con bande di errore
+    # ----------------------------------------------------------------------
+    if plot_cfg.get("toa_mean_with_error", False):
+        if "toa_avg" not in full_df.columns or "toa_std" not in full_df.columns:
+            print(" -> Colonne 'toa_avg' o 'toa_std' non presenti in full_df; skip plot ToA medio con errore.")
+        else:
+            grouped = full_df.groupby("voltage")
+            voltages = []
+            toa_means = []
+            toa_stds = []
+
+            for voltage, grp in grouped:
+                voltages.append(voltage)
+                toa_means.append(grp["toa_avg"].mean() * TOA_CLOCK)
+                toa_stds.append(grp["toa_std"].mean() * TOA_CLOCK)
+
+            voltages = np.array(voltages)
+            toa_means = np.array(toa_means)
+            toa_stds = np.array(toa_stds)
+
+            plt.figure(figsize=(6, 5))
+            plt.errorbar(
+                voltages, toa_means, yerr=toa_stds,
+                fmt='.-', ecolor='red', elinewidth=2, capsize=4
+            )
+            plt.title(f"Time-of-Arrival Medio con Errore\n(File: {file_name})", fontsize=10)
+            plt.xlabel("Voltage [mV]")
+            plt.ylabel("Time-of-Arrival Medio [ns]")
+            plt.grid(True)
+            plt.tight_layout()
+            print(" -> Creata figura: Time-of-Arrival Medio con Errore.")
+
+            if save_data_enabled:
+                export_path = Path(f"plot_raw_data/toa_mean_with_error/toa_mean_with_error_{file_name.replace('.','_')}.csv")
+                export_path.parent.mkdir(parents=True, exist_ok=True)
+                df_export = pd.DataFrame({
+                    "voltage": voltages,
+                    "toa_mean_ns": toa_means,
+                    "toa_std_ns": toa_stds
+                })
+                df_export.to_csv(export_path, index=False)
+                print(f" -> Dati grezzi esportati in: {export_path.resolve()}")
+
+
+    
+
        
 
 
