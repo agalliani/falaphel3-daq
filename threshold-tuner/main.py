@@ -6,16 +6,15 @@ from scipy.optimize import curve_fit
 from scipy.special import erf
 
 # --- CONFIGURAZIONE ---
-# Inserisci qui il percorso del tuo file
+# Inserisci qui il percorso del file
 INPUT_FILE = Path(r"C:\\Users\\andre\\Documents\\Microlab\\Falaphel\\TOT-AFE\\BoardDAQ\\falaphel3-daq\\misc\\script_analisi\\DAC-data-analyzer\\data\\export_matrix_scan_251114_182242_cap50_cap_csa_load.tsv")
 OUTPUT_FILE = Path("tdac_tuning_results.tsv")
 
 # Parametri di Tuning
-SCALE_FACTOR = 30.0   # mV corrispondenti alla base
-TDAC_MULTIPLIER = 31  # Fattore di moltiplicazione per i passi
+SCALE_FACTOR = 30.0   # mV
+TDAC_MULTIPLIER = 31  
 
 # --- FUNZIONI ---
-
 def model_erf(x, mu, sigma):
     """
     Funzione Error Function (S-Curve).
@@ -45,7 +44,7 @@ def fit_pixels(df):
         x_data = group['voltage'].values
         y_data = group['efficiency_toa'].values
         
-        # Stima iniziale intelligente
+        # Stima iniziale
         p0_guess = [
             np.median(x_data), 
             max(1.0, (x_data.max() - x_data.min()) / 4.0)
@@ -111,8 +110,7 @@ def plot_analysis(df, target_mu):
 
     # 3. Istogramma Passi TDAC (con segno per visualizzazione)
     plt.subplot(1, 3, 3)
-    # Creo una colonna temporanea per il grafico: negativo se t_up è 1 (come da logica originale)
-    # Nota: ho interpretato la tua logica originale: "tdac_steps associati a tup=1 segnati negativi"
+    # Creo una colonna temporanea per il grafico: negativo se t_up è 1
     signed_steps = np.where(df['t_up_tuner'] == 1, -df['tdac_tuner'], df['tdac_tuner'])
     
     plt.hist(signed_steps, bins=30, color='purple', alpha=0.7, edgecolor='black')
