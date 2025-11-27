@@ -24,13 +24,13 @@ plots:
   histograms: False 
   
   # 4. Plot: Timer-over-threshold in funzione del Voltage (Tot vs V)
-  tot_vs_voltage: False 
+  tot_vs_voltage: True 
 
   # 5. Plot: Time-of_arrival in funzione del Voltage (ToA vs V)
-  toa_vs_voltage: False
+  toa_vs_voltage: True
 
   # 6. Plot: Timer-over-threshold medio con barre di errore
-  tot_mean_with_error: False
+  tot_mean_with_error: True
   # 7. Plot: Time-of-arrival medio con barre di errore
   toa_mean_with_error: True
 

@@ -435,7 +435,7 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
             for voltage, grp in grouped:
                 voltages.append(voltage)
                 tot_means.append(grp["tot_avg"].mean() * TOT_CLOCK)
-                tot_stds.append(grp["tot_std"].mean() * TOT_CLOCK)
+                tot_stds.append(grp["tot_avg"].std() * TOT_CLOCK)
 
             voltages = np.array(voltages)
             tot_means = np.array(tot_means)
@@ -479,7 +479,7 @@ def plot_file_results(file_name, full_df, fit_df, fit_curves, all_data_points, y
             for voltage, grp in grouped:
                 voltages.append(voltage)
                 toa_means.append(grp["toa_avg"].mean() * TOA_CLOCK)
-                toa_stds.append(grp["toa_std"].mean() * TOA_CLOCK)
+                toa_stds.append(grp["toa_avg"].std() * TOA_CLOCK)
 
             voltages = np.array(voltages)
             toa_means = np.array(toa_means)
