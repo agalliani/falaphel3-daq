@@ -1,0 +1,41 @@
+source_files:
+  #- step-2mv/export_matrix_scan_251124_172301.tsv
+  #- step-2mv/export_matrix_scan_251124_205414_cap25.tsv
+  #- step-2mv/export_matrix_scan_251125_002721_cap50.tsv
+  #- step-2mv/export_matrix_scan_251125_040247_cap50_cap25.tsv
+  - export_matrix_scan_251128_133711_cap_csa_load_submatrix.tsv
+  - export_matrix_scan_251128_133831_cap50_cap_csa_load_submatrix.tsv
+  #- tot-lunghe/export_matrix_scan_251121_175215_cap_csa_load.tsv
+  #- tot-lunghe/export_matrix_scan_251121_222242_cap25_cap_csa_load.tsv
+  #- tot-lunghe/export_matrix_scan_251122_122531_cap50_cap_csa_load.tsv
+  #- tot-lunghe/export_matrix_scan_251123_023708_cap50_cap25_cap_csa_load.tsv
+voltage_threshold_max: 90
+
+save_data_from_plots: True
+
+# Abilitazione/Disabilitazione Plot
+plots:
+  # 1. Plot: Tutti i punti sperimentali (scatter plot)
+  data_points: True
+  
+  # 2. Plot: S-curve dei fit sovrapposte
+  fit_curves: True
+  
+  # 3. Plot: Istogrammi di Threshold e Dispersion
+  histograms: True 
+  
+  # 4. Plot: Timer-over-threshold in funzione del Voltage (Tot vs V)
+  tot_vs_voltage: True 
+
+  # 5. Plot: Time-of_arrival in funzione del Voltage (ToA vs V)
+  toa_vs_voltage: True
+
+  # 6. Plot: Timer-over-threshold medio con barre di errore
+  tot_mean_with_error: True
+  # 7. Plot: Time-of-arrival medio con barre di errore
+  toa_mean_with_error: True
+
+  # aggiungere toa medio e tot medio con le barre di errore con salvataggio dati grezzi del plot
+
+
+

@@ -3,13 +3,13 @@ Codebase for the firmware and software DAQ system of the FALAPHEL3 chip
 
 
 ##### Sistema automatizzato per fare misure in batch e analisi dati
-Nella cartella ```script_analisi\full_analizer``` è sufficiente lanciare lo script ```data-plotter.py``` per analizzare uno o più file prodotti dal sistema di acquisizione dati. 
+Nella cartella ```PLOTTER``` è sufficiente lanciare lo script ```data-plotter.py``` per analizzare uno o più file prodotti dal sistema di acquisizione dati. 
 Quali plot generare e quale file utilizzare come sorgente dati viene deciso tramite il file ```config.yaml```.
 
 
 
-La gestione delle misure automatizzate avviene con il software contenuto nella cartella ```software_batch```. Anche qui è possibile configurare un file con estensione yaml per gestire quali misure fare e con che parametri.
-Fare riferimento al README di quella cartella.
+La gestione delle misure automatizzate avviene con il software contenuto nella cartella ```BATCH```. Anche qui è possibile configurare un file con estensione yaml per gestire quali misure fare e con che parametri. Lanciare il file  ```batch_runner.py```
+
 
 
 

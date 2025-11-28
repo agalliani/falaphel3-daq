@@ -1,0 +1,75 @@
+serial:
+  port: "COM3"
+  baud: 115200
+
+injection:
+  bypass: 0
+  period: 63
+  burst: 1
+  duty: 8
+
+tasks:
+  - name: Prova_CD0
+    operation: submatrix_scan
+    submatrix:
+      start_x: 0 # Starting X coordinate of the sub-matrix (to be within 0-31)
+      start_y: 0 # Starting Y coordinate of the sub-matrix (to be within 0-7)
+      width: 2 # Span Width of the sub-matrix (max 32)
+      height: 2 # Span Height of the sub-matrix (max 8)
+    sweep:
+      start_v: 60
+      end_v: 30
+      step_v: 3
+      num_injections: 10
+      pixel_x: 16
+      pixel_y: 16
+      long_sweep_tot: true
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 40 # Voltage step for the long ToT sweep
+    config:
+      dac_th: 0
+      cap25: 0
+      cap50: 0
+      test_en: 1
+      cap_csa_load: 1
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: false
+      
+  - name: Prova_CD50
+    operation: submatrix_scan
+    submatrix:
+      start_x: 0 # Starting X coordinate of the sub-matrix (to be within 0-31)
+      start_y: 0 # Starting Y coordinate of the sub-matrix (to be within 0-7)
+      width: 2 # Span Width of the sub-matrix (max 32)
+      height: 2 # Span Height of the sub-matrix (max 8)
+    sweep:
+      start_v: 60
+      end_v: 30
+      step_v: 3
+      num_injections: 10
+      pixel_x: 16
+      pixel_y: 16
+      long_sweep_tot: true
+      long_sweep_range:
+        start_long_v: 460 # Starting voltage for the long ToT sweep
+        end_long_v: 100 # Ending voltage for the long ToT sweep
+        step_long_v: 40 # Voltage step for the long ToT sweep
+    config:
+      dac_th: 0
+      cap25: 0
+      cap50: 1
+      test_en: 1
+      cap_csa_load: 1
+      t_up: 0
+      out_en: 1
+      x: 0
+      y: 0
+    tuner:
+      enabled: true
+      file: tuner_configs/tdac_tuning_results.tsv
